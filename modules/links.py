@@ -38,11 +38,3 @@ class LeakyReluLink(Link):
 
 	def __call__(self, x):
 		return leaky_relu(x, self.a)
-
-#
-class AdaptiveInstanceNormalization(Link):
-
-	def __init__(self):
-		super().__init__()
-
-	def __call__(self, x):
