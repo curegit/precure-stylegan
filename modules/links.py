@@ -30,7 +30,7 @@ class EqualizedConvolution2D(Chain):
 		return self.conv(self.c * x)
 
 # Leaky ReLU activation function as link
-class LeakyReluLayer(Link):
+class LeakyReluLink(Link):
 
 	def __init__(self, a):
 		super().__init__()
