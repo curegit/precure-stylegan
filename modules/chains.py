@@ -10,16 +10,15 @@ class NoiseAdder(Chain):
 		with self.init_scope():
 			self.s = Const(init.Zero(), (1, ch, 1, 1))
 
-	def __call__(self, x):
+	def __call__(self, x, noise=None):
 		# ?
 		z = F.broadcast_to(z, x.shape)
 		s = F.broadcast_to(self.s(), x.shape)
 		return x + s * z
 
-	def generate_noise(self):
+	def generate_noise(self, batch, width, height):
 		# ?
 		return self.xp.random.normal(size=(x.shape[0], 1, x.shape[2], x.shape[3])).astype(np.float32)
-
 
 #
 class StyleAffineTransform(Chain):
