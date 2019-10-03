@@ -38,3 +38,13 @@ class LeakyReluLink(Link):
 
 	def __call__(self, x):
 		return leaky_relu(x, self.a)
+
+#
+class MiniBatchStandardDeviation(Link):
+
+	def __call__(self, x):
+		m = broadcast_to(mean(x, axis=0, keepdims=True), x.shape)
+		v = mean((x - m) ** 2, axis=0, keepdims=True)
+		std = mean(sqrt(v + 1e-8), keepdims=True)
+		new_channel = broadcast_to(std, (x.shape[0], 1, x.shape[2], x.shape[3]))
+		return F.concat((x, new_channel), axis=1)
