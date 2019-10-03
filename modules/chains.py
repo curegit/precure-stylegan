@@ -1,24 +1,36 @@
-from chainer import Chain
-from chainer.links import Parameter, Scale
+from chainer import Chain, Parameter
+from chainer.links import Scale
 from chainer.functions import broadcast_to
 from chainer.initializers import Zero, One
 from modules.links import EqualizedLinear, EqualizedConvolution2D
+from modules.functions import normal_random
 
-#
-class NoiseAdder(Chain):
+# Link that returns constant value
+class Constant(Chain):
 
-	def __init__(self, ch):
+	def __init__(self, channels, width, height):
 		super().__init__()
 		with self.init_scope():
-			# shape? correct
-			self.s = Scale(W_shape=(ch))
+			self.p = Parameter(One(), (channels, width, height))
+
+	def __call__(self):
+		return self.p
+
+# Noise injection layer
+class NoiseAdder(Chain):
+
+	def __init__(self, channels):
+		super().__init__()
+		with self.init_scope():
+			self.s = Scale(W_shape=(channels))
 
 	def __call__(self, x):
-		# noise: (batch, w, h)
-		noise = self.xp.random.normal(size=(x.shape[0], 1, x.shape[2], x.shape[3])).astype(np.float32)
-		n = broadcast_to(noise, x.shape)
-		#s = broadcast_to(self.s(), x.shape)
+		n = self.generate_noises(*x.shape)
 		return x + self.s(n)
+
+	def generate_noises(batch, channels, height, width):
+		n = normal_random(shape=(batch, 1, height, width))
+		return broadcast_to(n, (batch, channels, height, width))
 
 #
 class StyleAffineTransform(Chain):
@@ -50,7 +62,7 @@ class FirstSynthesisNetwork(Chain):
 	def __init__(self):
 		super().__init__()
 		with self.init_scope():
-			self.p1 = Parameter()
+			self.p1 = Constant()
 			self.n1 = NoiseAdder()
 			self.a1 = StyleAffineTransform()
 			self.i1 = AdaptiveInstanceNormalization()
@@ -58,24 +70,27 @@ class FirstSynthesisNetwork(Chain):
 			self.n2 = NoiseAdder()
 			self.a2 = StyleAffineTransform()
 			self.i2 = AdaptiveInstanceNormalization()
+			#self.rgb =
 
-	def __call__(self, x, w)
+	def __call__(self, x, w):
+
 
 
 #
 class SynthesisNetwork(Chain):
 
-	def __init__(self):
+	def __init__(self, in_channels, out_channels, w_size):
 		super().__init__()
 		with self.init_scope():
 			self.c1 = EqualizedConvolution2D()
 			self.n1 = NoiseAdder()
-			self.a1 = StyleAffineTransform()
+			self.a1 = StyleAffineTransform(z_size)
 			self.i1 = AdaptiveInstanceNormalization()
 			self.c2 = EqualizedConvolution2D()
 			self.n2 = NoiseAdder()
 			self.a2 = StyleAffineTransform()
 			self.i2 = AdaptiveInstanceNormalization()
+			#self.rgb =
 
 	def __call__(self, x, w):
 

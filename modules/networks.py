@@ -1,25 +1,26 @@
 from chainer import Chain, Sequential
+from chainer.functions import mean, sqrt
 from modules.links import EqualizedLinear, LeakyReluLink
 from modules.chains import FirstSynthesisNetwork, SynthesisNetwork
 
-# Mapping network
-class StyleMapper(Chain):
+# Feature mapping network
+class FeatureMapper(Chain):
 
-	def __init__(self, size=256, depth=6):
+	def __init__(self, size, depth):
 		super().__init__()
-		self.size = size
 		with self.init_scope():
 			self.mlp = Sequential(EqualizedLinear(size, size), LeakyReluLink(0.1)).repeat(depth)
 
 	def __call__(self, z):
-		# np? z:(batch, size)
-		n = z / self.xp.sqrt(self.xp.sum(z * z, axis=1, keepdims=True) / self.size + 1e-8)
-		return self.mlp(n) # (batch, size)
+		return self.mlp(self.normalize(z))
+
+	def normalize(self, z):
+		return z / sqrt(mean(z ** 2, axis=1, keepdims=True) + 1e-8)
 
 # Image generation network
 class ImageGenerator(Chain):
 
-	def __init__(self):
+	def __init__(self, w_size):
 		super().__init__()
 		with self.init_scope():
 			self.s1 = FirstSynthesisNetwork()
@@ -31,9 +32,13 @@ class ImageGenerator(Chain):
 			self.s7 = SynthesisNetwork()
 			self.s8 = SynthesisNetwork()
 			self.s9 = SynthesisNetwork()
-			#self.rgb =
 
-	def __call__(self, w)
+
+	def __call__(self, w, stage):
+
+		if stage == 1: return
+
+
 
 # Generator network
 class Generator(Chain):
@@ -41,7 +46,7 @@ class Generator(Chain):
 	def __init__(self):
 		super().__init__()
 		with self.init_scope():
-			self.m = StyleMapper()
+			self.m = FeatureMapper()
 			self.g = ImageGenerator()
 
 	def __call__(self, z):
