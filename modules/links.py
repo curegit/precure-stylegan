@@ -19,12 +19,12 @@ class EqualizedLinear(Chain):
 # Learning rate-equalized convolution layer
 class EqualizedConvolution2D(Chain):
 
-	def __init__(self, in_ch, out_ch, ksize=None, stride=1, pad=0, initial_bias=None):
+	def __init__(self, in_channels, out_channels, ksize=None, stride=1, pad=0, initial_bias=None):
 		super().__init__()
 		# TODO: np?
-		self.c = sqrt(self.xp.array([2]).astype("float32") / (in_ch * ksize ** 2))
+		self.c = sqrt(self.xp.array([2]).astype("float32") / (in_channels * ksize ** 2))
 		with self.init_scope():
-			self.conv = Convolution2D(in_ch, out_ch, ksize, stride, pad, initialW=Normal(1.0), initial_bias=initial_bias)
+			self.conv = Convolution2D(in_channels, out_channels, ksize, stride, pad, initialW=Normal(1.0), initial_bias=initial_bias)
 
 	def __call__(self, x):
 		return self.conv(self.c * x)
