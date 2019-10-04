@@ -9,7 +9,7 @@ class EqualizedLinear(Chain):
 	def __init__(self, in_size, out_size, initial_bias=None):
 		super().__init__()
 		# TODO: np?
-		self.c = self.xp.sqrt(2 / in_size)
+		self.c = sqrt(self.xp.array([2]).astype("float32") / in_size)
 		with self.init_scope():
 			self.linear = Linear(in_size, out_size, initialW=Normal(1.0), initial_bias=initial_bias)
 
@@ -22,7 +22,7 @@ class EqualizedConvolution2D(Chain):
 	def __init__(self, in_ch, out_ch, ksize, stride, pad, initial_bias=None):
 		super().__init__()
 		# TODO: np?
-		self.c = self.xp.sqrt(2 / (in_ch * ksize ** 2))
+		self.c = sqrt(self.xp.array([2]).astype("float32") / (in_ch * ksize ** 2))
 		with self.init_scope():
 			self.conv = Convolution2D(in_ch, out_ch, ksize, stride, pad, initialW=Normal(1.0), initial_bias=initial_bias)
 
@@ -39,11 +39,12 @@ class LeakyReluLink(Link):
 	def __call__(self, x):
 		return leaky_relu(x, self.a)
 
-# Add a new channel of mini-batch standard deviation
+# Link inserting a new channel of mini-batch standard deviation
 class MiniBatchStandardDeviation(Link):
 
 	def __call__(self, x):
 		m = broadcast_to(mean(x, axis=0, keepdims=True), x.shape)
+		# why is eps needed?
 		sd = sqrt(mean((x - m) ** 2, axis=0, keepdims=True) + 1e-8)
 		channel = broadcast_to(mean(sd), (x.shape[0], 1, x.shape[2], x.shape[3]))
 		return concat((x, channel), axis=1)
