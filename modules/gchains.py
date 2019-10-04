@@ -2,7 +2,7 @@ from chainer import Chain, Parameter
 from chainer.links import Scale
 from chainer.functions import mean, sqrt, broadcast_to, unpooling_2d
 from chainer.initializers import Zero, One
-from modules.links import EqualizedLinear, EqualizedConvolution2D
+from modules.links import EqualizedLinear, EqualizedConvolution2D, LeakyReluLink
 from modules.functions import normal_random
 
 # Link that returns constant value
@@ -78,6 +78,7 @@ class InitialSynthesisNetwork(Chain):
 			self.a1 = StyleAffineTransform(w_size, out_channels)
 			self.i1 = AdaptiveInstanceNormalization()
 			self.c1 = EqualizedConvolution2D(in_channels, out_channels, ksize=3, stride=1, pad=1)
+			self.r1 = LeakyReluLink(0.2)
 			self.n2 = NoiseAdder(out_channels)
 			self.a2 = StyleAffineTransform(w_size, out_channels)
 			self.i2 = AdaptiveInstanceNormalization()
@@ -89,10 +90,11 @@ class InitialSynthesisNetwork(Chain):
 		ys1, yb1 = self.a1(w)
 		h3 = self.i1(h2, ys1, yb1)
 		h4 = self.c1(h3)
-		h5 = self.n2(h4)
+		h5 = self.r1(h4)
+		h6 = self.n2(h5)
 		ys2, yb2 = self.a2(w)
-		h6 = self.i2(h5, ys2, yb2)
-		return self.rgb(h6) if last else h6
+		h7 = self.i2(h6, ys2, yb2)
+		return self.rgb(h7) if last else h7
 
 # Tail blocks of image generator
 class SynthesisNetwork(Chain):
@@ -102,10 +104,12 @@ class SynthesisNetwork(Chain):
 		with self.init_scope():
 			self.u1 = Upsampler()
 			self.c1 = EqualizedConvolution2D(in_channels, out_channels, ksize=3, stride=1, pad=1)
+			self.r1 = LeakyReluLink(0.2)
 			self.n1 = NoiseAdder(out_channels)
 			self.a1 = StyleAffineTransform(w_size, out_channels)
 			self.i1 = AdaptiveInstanceNormalization()
 			self.c2 = EqualizedConvolution2D(out_channels, out_channels, ksize=3, stride=1, pad=1)
+			self.r2 = LeakyReluLink(0.2)
 			self.n2 = NoiseAdder(out_channels)
 			self.a2 = StyleAffineTransform(w_size, out_channels)
 			self.i2 = AdaptiveInstanceNormalization()
@@ -114,11 +118,13 @@ class SynthesisNetwork(Chain):
 	def __call__(self, x, w, last=False):
 		h1 = self.u1(x)
 		h2 = self.c1(h1)
-		h3 = self.n1(h2)
+		h3 = self.r1(h2)
+		h4 = self.n1(h3)
 		ys1, yb1 = self.a1(w)
-		h4 = self.i1(h3, ys1, yb1)
-		h5 = self.c2(h4)
-		h6 = self.n2(h5)
+		h5 = self.i1(h4, ys1, yb1)
+		h6 = self.c2(h5)
+		h7 = self.r2(h6)
+		h8 = self.n2(h7)
 		ys2, yb2 = self.a2(w)
-		h7 = self.i2(h6, ys2, yb2)
-		return self.rgb(h7) if last else h6
+		h9 = self.i2(h8, ys2, yb2)
+		return self.rgb(h9) if last else h9
