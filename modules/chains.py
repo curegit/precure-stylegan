@@ -38,7 +38,7 @@ class NoiseAdder(Chain):
 		n = self.generate_noises(*x.shape)
 		return x + self.s(n)
 
-	def generate_noises(batch, channels, height, width):
+	def generate_noises(self, batch, channels, height, width):
 		n = normal_random(shape=(batch, 1, height, width))
 		return broadcast_to(n, (batch, channels, height, width))
 
