@@ -1,7 +1,7 @@
 from chainer import Chain, Sequential
 from chainer.functions import mean, sqrt
 from modules.links import EqualizedLinear, LeakyReluLink
-from modules.chains import InitialSynthesisNetwork, SynthesisNetwork
+from modules.gchains import InitialSynthesisNetwork, SynthesisNetwork
 from modules.functions import normal_random
 
 # Feature mapping network
