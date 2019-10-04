@@ -1,12 +1,12 @@
 from chainer import Chain, Link
 from chainer.links import Linear, Convolution2D
-from chainer.functions import mean, sqrt, concat, broadcast_to, leaky_relu
+from chainer.functions import mean, sqrt, concat, broadcast_to, unpooling_2d, leaky_relu
 from chainer.initializers import Normal
 
 # Learning rate-equalized FC layer
 class EqualizedLinear(Chain):
 
-	def __init__(self, in_size, out_size, initial_bias=None):
+	def __init__(self, in_size, out_size=None, initial_bias=None):
 		super().__init__()
 		# TODO: np?
 		self.c = sqrt(self.xp.array([2]).astype("float32") / in_size)
@@ -19,7 +19,7 @@ class EqualizedLinear(Chain):
 # Learning rate-equalized convolution layer
 class EqualizedConvolution2D(Chain):
 
-	def __init__(self, in_ch, out_ch, ksize, stride, pad, initial_bias=None):
+	def __init__(self, in_ch, out_ch, ksize=None, stride=1, pad=0, initial_bias=None):
 		super().__init__()
 		# TODO: np?
 		self.c = sqrt(self.xp.array([2]).astype("float32") / (in_ch * ksize ** 2))
@@ -42,9 +42,12 @@ class LeakyReluLink(Link):
 # Link inserting a new channel of mini-batch standard deviation
 class MiniBatchStandardDeviation(Link):
 
+	def __init__(self):
+		super().__init__()
+
 	def __call__(self, x):
 		m = broadcast_to(mean(x, axis=0, keepdims=True), x.shape)
-		# why is eps needed?
+		# TODO: why is eps needed?
 		sd = sqrt(mean((x - m) ** 2, axis=0, keepdims=True) + 1e-8)
 		channel = broadcast_to(mean(sd), (x.shape[0], 1, x.shape[2], x.shape[3]))
 		return concat((x, channel), axis=1)
