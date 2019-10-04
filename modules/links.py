@@ -1,6 +1,6 @@
 from chainer import Chain, Link
 from chainer.links import Linear, Convolution2D
-from chainer.functions import mean, sqrt, concat, broadcast_to, unpooling_2d, leaky_relu
+from chainer.functions import sqrt, leaky_relu
 from chainer.initializers import Normal
 
 # Learning rate-equalized FC layer
@@ -38,16 +38,3 @@ class LeakyReluLink(Link):
 
 	def __call__(self, x):
 		return leaky_relu(x, self.a)
-
-# Link inserting a new channel of mini-batch standard deviation
-class MiniBatchStandardDeviation(Link):
-
-	def __init__(self):
-		super().__init__()
-
-	def __call__(self, x):
-		m = broadcast_to(mean(x, axis=0, keepdims=True), x.shape)
-		# TODO: why is eps needed?
-		sd = sqrt(mean((x - m) ** 2, axis=0, keepdims=True) + 1e-8)
-		channel = broadcast_to(mean(sd), (x.shape[0], 1, x.shape[2], x.shape[3]))
-		return concat((x, channel), axis=1)
