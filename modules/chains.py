@@ -61,9 +61,11 @@ class AdaptiveInstanceNormalization(Chain):
 		super().__init__()
 
 	def __call__(self, x, ys, yb):
+		s = broadcast_to(ys.reshape(ys.shape + (1, 1)), ys.shape + x.shape[2:])
+		b = broadcast_to(yb.reshape(yb.shape + (1, 1)), yb.shape + x.shape[2:])
 		m = broadcast_to(mean(x, axis=1, keepdims=True), x.shape)
 		sd = broadcast_to(sqrt(mean((x - m) ** 2, axis=1, keepdims=True) + 1e-8), x.shape)
-		return ys * (x - m) / sd + yb
+		return s * (x - m) / sd + b
 
 # First block of image generator
 class InitialSynthesisNetwork(Chain):
