@@ -2,6 +2,7 @@ from chainer import Chain, Sequential
 from chainer.functions import mean, sqrt
 from modules.links import EqualizedLinear, LeakyReluLink
 from modules.gchains import InitialSynthesisNetwork, SynthesisNetwork
+from modules.dchains import DiscriminatorChain, FinalDiscriminatorChain
 from modules.functions import normal_random
 
 # Feature mapping network
@@ -84,3 +85,24 @@ class Discriminator(Chain):
 
 	def __init__(self):
 		super().__init__()
+		with self.init_scope():
+			self.d1 = DiscriminatorChain(16, 32)
+			self.d2 = DiscriminatorChain(32, 64)
+			self.d3 = DiscriminatorChain(64, 128)
+			self.d4 = DiscriminatorChain(128, 256)
+			self.d5 = DiscriminatorChain(256, 512)
+			self.d6 = DiscriminatorChain(512, 512)
+			self.d7 = DiscriminatorChain(512, 512)
+			self.d8 = DiscriminatorChain(512, 512)
+			self.d9 = FinalDiscriminatorChain(512)
+
+	def __call__(self, x, stage):
+		h1 = self.d1(x, stage == 9) if stage >= 9 else x
+		h2 = self.d2(h1, stage == 8) if stage >= 8 else h1
+		h3 = self.d3(h2, stage == 7) if stage >= 7 else h2
+		h4 = self.d4(h3, stage == 6) if stage >= 6 else h3
+		h5 = self.d5(h4, stage == 5) if stage >= 5 else h4
+		h6 = self.d6(h5, stage == 4) if stage >= 4 else h5
+		h7 = self.d7(h6, stage == 3) if stage >= 3 else h6
+		h8 = self.d8(h7, stage == 2) if stage >= 2 else h7
+		return self.d9(h8, stage == 1) if stage >= 1 else h8
