@@ -11,7 +11,7 @@ class FeatureMapper(Chain):
 	def __init__(self, size, depth):
 		super().__init__()
 		with self.init_scope():
-			self.mlp = Sequential(EqualizedLinear(size, size), LeakyReluLink(0.1)).repeat(depth)
+			self.mlp = Sequential(EqualizedLinear(size, size), LeakyReluLink(0.2)).repeat(depth)
 
 	def __call__(self, z):
 		return self.mlp(self.normalize(z))
@@ -79,6 +79,9 @@ class Generator(Chain):
 
 	def generate_latent(self, batch):
 		return normal_random(shape=(batch, self.z_size))
+
+	def resolution(self, stage):
+		return (2 * 2 ** stage, 2 * 2 ** stage)
 
 # Discriminator network
 class Discriminator(Chain):
