@@ -14,7 +14,7 @@ class Constant(Chain):
 			self.p = Parameter(One(), (channels, height, width))
 
 	def __call__(self, batch):
-		return broadcast_to(self.p, (batch,) + self.p.shape)
+		return broadcast_to(self.p, (batch, *self.p.shape))
 
 # 2x upsample operation as link
 class Upsampler(Chain):
