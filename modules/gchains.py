@@ -16,7 +16,7 @@ class Constant(Chain):
 	def __call__(self, batch):
 		return broadcast_to(self.p, (batch,) + self.p.shape)
 
-# 2x Upsample operation as link
+# 2x upsample operation as link
 class Upsampler(Chain):
 
 	def __init__(self):

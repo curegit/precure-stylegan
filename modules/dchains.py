@@ -15,7 +15,7 @@ class MiniBatchStandardDeviation(Chain):
 		channel = broadcast_to(mean(sd), (x.shape[0], 1, x.shape[2], x.shape[3]))
 		return concat((x, channel), axis=1)
 
-# 1/2 Downsample operation as link
+# 1/2 downsample operation as link
 class Downsampler(Chain):
 
 	def __init__(self):
