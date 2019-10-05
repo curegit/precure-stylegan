@@ -3,7 +3,7 @@ from chainer.links import Scale
 from chainer.functions import mean, sqrt, broadcast_to, unpooling_2d
 from chainer.initializers import Zero, One
 from modules.links import EqualizedLinear, EqualizedConvolution2D, LeakyReluLink
-from modules.functions import normal_random
+from modules.functions import normal_random, enlarge_images, lerp_blend
 
 # Link that returns constant value
 class Constant(Chain):
@@ -84,7 +84,7 @@ class InitialSynthesisNetwork(Chain):
 			self.i2 = AdaptiveInstanceNormalization()
 			self.rgb = EqualizedConvolution2D(out_channels, 3, ksize=1, stride=1, pad=0)
 
-	def __call__(self, w, last=False):
+	def __call__(self, w, last=False, upsample=False):
 		h1 = self.p1(w.shape[0])
 		h2 = self.n1(h1)
 		ys1, yb1 = self.a1(w)
@@ -94,7 +94,10 @@ class InitialSynthesisNetwork(Chain):
 		h6 = self.n2(h5)
 		ys2, yb2 = self.a2(w)
 		h7 = self.i2(h6, ys2, yb2)
-		return self.rgb(h7) if last else h7
+		if last:
+			return self.rgb(h7), None
+		else:
+			return h7, self.rgb(enlarge_images(h7)) if upsample else None
 
 # Tail blocks of image generator
 class SynthesisNetwork(Chain):
@@ -115,7 +118,7 @@ class SynthesisNetwork(Chain):
 			self.i2 = AdaptiveInstanceNormalization()
 			self.rgb = EqualizedConvolution2D(out_channels, 3, ksize=1, stride=1, pad=0)
 
-	def __call__(self, x, w, last=False):
+	def __call__(self, x, w, last=False, upsample=False, alpha=1.0, blend=None):
 		h1 = self.u1(x)
 		h2 = self.c1(h1)
 		h3 = self.r1(h2)
@@ -127,4 +130,7 @@ class SynthesisNetwork(Chain):
 		h8 = self.n2(h7)
 		ys2, yb2 = self.a2(w)
 		h9 = self.i2(h8, ys2, yb2)
-		return self.rgb(h9) if last else h9
+		if last:
+			return self.rgb(h9) if blend is None else lerp_blend(blend, self.rgb(h9), alpha), None
+		else:
+			return h9, self.rgb(enlarge_images(h9)) if upsample else None

@@ -1,6 +1,7 @@
 from chainer import Chain, Sequential
 from chainer.functions import mean, sqrt, concat, broadcast_to, flatten, average_pooling_2d
 from modules.links import EqualizedLinear, EqualizedConvolution2D, LeakyReluLink
+from modules.functions import lerp_blend
 
 # Link inserting a new channel of mini-batch standard deviation
 class MiniBatchStandardDeviation(Chain):
@@ -37,13 +38,14 @@ class DiscriminatorChain(Chain):
 			self.r2 = LeakyReluLink(0.2)
 			self.d1 = Downsampler()
 
-	def __call__(self, x, first):
+	def __call__(self, x, first=False, alpha=1.0, blend=None):
 		h1 = self.rgb(x) if first else x
-		h2 = self.c1(h1)
-		h3 = self.r1(h2)
-		h4 = self.c2(h3)
-		h5 = self.r2(h4)
-		return self.d1(h5)
+		h2 = h1 if blend is None else lerp_blend(self.rgb(blend), h1, alpha)
+		h3 = self.c1(h2)
+		h4 = self.r1(h3)
+		h5 = self.c2(h4)
+		h6 = self.r2(h5)
+		return self.d1(h6)
 
 # Last block of discriminator
 class FinalDiscriminatorChain(Chain):
@@ -59,11 +61,12 @@ class FinalDiscriminatorChain(Chain):
 			self.r2 = LeakyReluLink(0.2)
 			self.fc = EqualizedLinear(in_channels, 1)
 
-	def __call__(self, x, first=False):
+	def __call__(self, x, first=False, alpha=1.0, blend=None):
 		h1 = self.rgb(x) if first else x
-		h2 = self.mb(h1)
-		h3 = self.c1(h2)
-		h4 = self.r1(h3)
-		h5 = self.c2(h4)
-		h6 = self.r2(h5)
-		return flatten(self.fc(h6))
+		h2 = h1 if blend is None else lerp_blend(self.rgb(blend), h1, alpha)
+		h3 = self.mb(h2)
+		h4 = self.c1(h3)
+		h5 = self.r1(h4)
+		h6 = self.c2(h5)
+		h7 = self.r2(h6)
+		return flatten(self.fc(h7))

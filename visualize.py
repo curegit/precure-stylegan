@@ -10,6 +10,7 @@ z_size = 512
 
 # Evaluation config
 batch = 10
+alpha = 0.5
 
 # Graph style config
 gvarstyle = {"fillcolor": "#5edbf1", "shape": "record", "style": "filled"}
@@ -29,13 +30,13 @@ mkdirp(path)
 # Make generator graph
 gen = Generator(z_size)
 z = gen.generate_latent(batch)
-y = gen(z, stage)
+y = gen(z, stage, alpha)
 dg = cg.build_computational_graph([y], variable_style=gvarstyle, function_style=gfuncstyle).dump()
 
 # Make Discriminator graph
 dis = Discriminator()
 x = np.zeros((batch, 3, *gen.resolution(stage)), dtype=np.float32)
-y = dis(x, stage)
+y = dis(x, stage, alpha)
 dd = cg.build_computational_graph([y], variable_style=dvarstyle, function_style=dfuncstyle).dump()
 
 # Save as dot file
