@@ -1,5 +1,5 @@
 from chainer import Chain, Sequential
-from chainer.functions import mean, sqrt, concat, broadcast_to, average_pooling_2d
+from chainer.functions import mean, sqrt, concat, broadcast_to, flatten, average_pooling_2d
 from modules.links import EqualizedLinear, EqualizedConvolution2D, LeakyReluLink
 
 # Link inserting a new channel of mini-batch standard deviation
@@ -66,4 +66,4 @@ class FinalDiscriminatorChain(Chain):
 		h4 = self.r1(h3)
 		h5 = self.c2(h4)
 		h6 = self.r2(h5)
-		return self.fc(h6)
+		return flatten(self.fc(h6))
