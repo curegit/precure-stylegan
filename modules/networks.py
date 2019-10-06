@@ -73,11 +73,11 @@ class Generator(Chain):
 		super().__init__()
 		self.z_size = z_size
 		with self.init_scope():
-			self.m = FeatureMapper(z_size, 8)
-			self.g = ImageGenerator(z_size)
+			self.mapper = FeatureMapper(z_size, 8)
+			self.generator = ImageGenerator(z_size)
 
 	def __call__(self, z, stage, alpha=1.0):
-		return self.g(self.m(z), stage, alpha)
+		return self.generator(self.mapper(z), stage, alpha)
 
 	def generate_latent(self, batch):
 		return normal_random(shape=(batch, self.z_size))
