@@ -21,8 +21,9 @@ def filerelpath(relpath):
 	return path.join(d, relpath)
 
 # Load image to return chainer variable
-def load_image(path):
+def load_image(path, size=None):
 	img = Image.open(path)
+	if size is not None: img = img.resize(size, Image.LANCZOS)
 	array = asarray(img, dtype=uint8).transpose(2, 0, 1).astype(float32) / 255
 	return Variable(array)
 
