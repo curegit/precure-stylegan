@@ -1,10 +1,11 @@
 from numpy import float32
 from numpy.random import normal
+from chainer import Variable
 from chainer.functions import resize_images
 
 # Generate normally-distributed random array
 def normal_random(shape, mean=0.0, stddev=1.0):
-	return normal(mean, stddev, size=shape).astype(float32)
+	return Variable(normal(mean, stddev, size=shape).astype(float32))
 
 # 1/2 image reduction by bilinear
 def shrink_images(x):

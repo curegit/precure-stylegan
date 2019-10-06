@@ -1,7 +1,7 @@
-import numpy as np
 import pydot as dot
 import chainer.computational_graph as cg
 from modules.networks import Generator, Discriminator
+from modules.functions import normal_random
 from modules.utilities import mkdirp, filepath, filerelpath
 
 # Model params
@@ -35,7 +35,7 @@ dg = cg.build_computational_graph([y], variable_style=gvarstyle, function_style=
 
 # Make Discriminator graph
 dis = Discriminator()
-x = np.zeros((batch, 3, *gen.resolution(stage)), dtype=np.float32)
+x = normal_random((batch, 3, *gen.resolution(stage)))
 y = dis(x, stage, alpha)
 dd = cg.build_computational_graph([y], variable_style=dvarstyle, function_style=dfuncstyle).dump()
 
