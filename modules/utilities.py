@@ -27,7 +27,7 @@ def load_image(path):
 	return Variable(array)
 
 # Save chainer variable of 2d array as image
-def save_image(path, variable):
+def save_image(variable, path):
 	variable.to_cpu()
 	array = clip(rint(variable.array * 255), 0, 255).astype(uint8).transpose(1, 2, 0)
 	img = Image.fromarray(array, "RGB")
