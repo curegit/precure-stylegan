@@ -1,7 +1,6 @@
 from chainer import Chain, Sequential
 from chainer.functions import mean, sqrt, concat, broadcast_to, flatten, average_pooling_2d
-from modules.links import EqualizedLinear, EqualizedConvolution2D, LeakyReluLink
-from modules.functions import lerp_blend
+from modules.links import EqualizedLinear, EqualizedConvolution2D, LeakyReluLink, LerpBlendLink
 
 # Link inserting a new channel of mini-batch standard deviation
 class MiniBatchStandardDeviation(Chain):
@@ -36,16 +35,17 @@ class DiscriminatorChain(Chain):
 			self.r1 = LeakyReluLink(0.2)
 			self.c2 = EqualizedConvolution2D(in_channels, out_channels, ksize=3, stride=1, pad=1)
 			self.r2 = LeakyReluLink(0.2)
-			self.d1 = Downsampler()
+			self.ds = Downsampler()
+			self.lb = LerpBlendLink()
 
 	def __call__(self, x, first=False, alpha=1.0, blend=None):
 		h1 = self.rgb(x) if first else x
-		h2 = h1 if blend is None else lerp_blend(self.rgb(blend), h1, alpha)
+		h2 = h1 if blend is None else self.lb(self.rgb(blend), h1, alpha)
 		h3 = self.c1(h2)
 		h4 = self.r1(h3)
 		h5 = self.c2(h4)
 		h6 = self.r2(h5)
-		return self.d1(h6)
+		return self.ds(h6)
 
 # Last block of discriminator
 class FinalDiscriminatorChain(Chain):
@@ -53,6 +53,7 @@ class FinalDiscriminatorChain(Chain):
 	def __init__(self, in_channels):
 		super().__init__()
 		with self.init_scope():
+			self.lb = LerpBlendLink()
 			self.rgb = Sequential(EqualizedConvolution2D(3, in_channels, ksize=1, stride=1, pad=0), LeakyReluLink(0.2))
 			self.mb = MiniBatchStandardDeviation()
 			self.c1 = EqualizedConvolution2D(in_channels + 1, in_channels, ksize=3, stride=1, pad=1)
@@ -63,7 +64,7 @@ class FinalDiscriminatorChain(Chain):
 
 	def __call__(self, x, first=False, alpha=1.0, blend=None):
 		h1 = self.rgb(x) if first else x
-		h2 = h1 if blend is None else lerp_blend(self.rgb(blend), h1, alpha)
+		h2 = h1 if blend is None else self.lb(self.rgb(blend), h1, alpha)
 		h3 = self.mb(h2)
 		h4 = self.c1(h3)
 		h5 = self.r1(h4)

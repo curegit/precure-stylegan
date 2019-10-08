@@ -1,9 +1,9 @@
-from chainer import Chain, Sequential
+import numpy as np
+from chainer import Chain, Sequential, Variable
 from chainer.functions import mean, sqrt
 from modules.links import EqualizedLinear, LeakyReluLink
 from modules.gchains import InitialSynthesisNetwork, SynthesisNetwork
-from modules.dchains import DiscriminatorChain, FinalDiscriminatorChain
-from modules.functions import normal_random, shrink_images
+from modules.dchains import DiscriminatorChain, FinalDiscriminatorChain, Downsampler
 
 # Feature mapping network
 class FeatureMapper(Chain):
@@ -77,10 +77,11 @@ class Generator(Chain):
 			self.generator = ImageGenerator(z_size)
 
 	def __call__(self, z, stage, alpha=1.0):
+		z = Variable(z)
 		return self.generator(self.mapper(z), stage, alpha)
 
 	def generate_latent(self, batch):
-		return normal_random(shape=(batch, self.z_size))
+		return self.xp.random.normal(size=(batch, self.z_size)).astype(self.xp.float32) if self.xp == np else self.xp.random.normal(size=(batch, self.z_size), dtype=self.xp.float32)
 
 	def resolution(self, stage):
 		return (2 * 2 ** stage, 2 * 2 ** stage)
@@ -91,6 +92,7 @@ class Discriminator(Chain):
 	def __init__(self):
 		super().__init__()
 		with self.init_scope():
+			self.ds = Downsampler()
 			self.d1 = DiscriminatorChain(16, 32)
 			self.d2 = DiscriminatorChain(32, 64)
 			self.d3 = DiscriminatorChain(64, 128)
@@ -102,13 +104,14 @@ class Discriminator(Chain):
 			self.d9 = FinalDiscriminatorChain(512)
 
 	def __call__(self, x, stage, alpha=1.0):
+		x = Variable(x)
 		blend = 0 <= alpha < 1
 		h1 = self.d1(x, stage == 9) if stage >= 9 else x
-		h2 = self.d2(h1, stage == 8, alpha, shrink_images(x) if stage == 9 and blend else None) if stage >= 8 else h1
-		h3 = self.d3(h2, stage == 7, alpha, shrink_images(x) if stage == 8 and blend else None) if stage >= 7 else h2
-		h4 = self.d4(h3, stage == 6, alpha, shrink_images(x) if stage == 7 and blend else None) if stage >= 6 else h3
-		h5 = self.d5(h4, stage == 5, alpha, shrink_images(x) if stage == 6 and blend else None) if stage >= 5 else h4
-		h6 = self.d6(h5, stage == 4, alpha, shrink_images(x) if stage == 5 and blend else None) if stage >= 4 else h5
-		h7 = self.d7(h6, stage == 3, alpha, shrink_images(x) if stage == 4 and blend else None) if stage >= 3 else h6
-		h8 = self.d8(h7, stage == 2, alpha, shrink_images(x) if stage == 3 and blend else None) if stage >= 2 else h7
-		return self.d9(h8, stage == 1, alpha, shrink_images(x) if stage == 2 and blend else None) if stage >= 1 else h8
+		h2 = self.d2(h1, stage == 8, alpha, self.ds(x) if stage == 9 and blend else None) if stage >= 8 else h1
+		h3 = self.d3(h2, stage == 7, alpha, self.ds(x) if stage == 8 and blend else None) if stage >= 7 else h2
+		h4 = self.d4(h3, stage == 6, alpha, self.ds(x) if stage == 7 and blend else None) if stage >= 6 else h3
+		h5 = self.d5(h4, stage == 5, alpha, self.ds(x) if stage == 6 and blend else None) if stage >= 5 else h4
+		h6 = self.d6(h5, stage == 4, alpha, self.ds(x) if stage == 5 and blend else None) if stage >= 4 else h5
+		h7 = self.d7(h6, stage == 3, alpha, self.ds(x) if stage == 4 and blend else None) if stage >= 3 else h6
+		h8 = self.d8(h7, stage == 2, alpha, self.ds(x) if stage == 3 and blend else None) if stage >= 2 else h7
+		return self.d9(h8, stage == 1, alpha, self.ds(x) if stage == 2 and blend else None) if stage >= 1 else h8

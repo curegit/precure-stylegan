@@ -11,7 +11,7 @@ class StyleGanDataset(DatasetMixin):
 		self.size = size
 		self.preload = preload
 		self.images = []
-		for e in ["png", "jpg", "jpeg", "gif", "bmp", "tiff"]:
+		for e in ["png", "jpg", "jpeg", "gif", "bmp", "tif", "tiff"]:
 			self.images += [f for f in glob(filepath(directory, "**/*", e), recursive=True) if isfile(f)]
 		if preload:
 			self.arraylist = [load_image(i, size) for i in self.images]

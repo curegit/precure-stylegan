@@ -1,15 +1,14 @@
 import pydot as dot
 import chainer.computational_graph as cg
 from modules.networks import Generator, Discriminator
-from modules.functions import normal_random
 from modules.utilities import mkdirp, filepath, filerelpath
 
 # Model params
 stage = 3
-z_size = 512
+z_size = 128
 
 # Evaluation config
-batch = 10
+batch = 2
 alpha = 0.5
 
 # Graph style config
@@ -30,13 +29,12 @@ mkdirp(path)
 # Make generator graph
 gen = Generator(z_size)
 z = gen.generate_latent(batch)
-y = gen(z, stage, alpha)
-dg = cg.build_computational_graph([y], variable_style=gvarstyle, function_style=gfuncstyle).dump()
+i = gen(z, stage, alpha)
+dg = cg.build_computational_graph([i], variable_style=gvarstyle, function_style=gfuncstyle).dump()
 
 # Make Discriminator graph
 dis = Discriminator()
-x = normal_random((batch, 3, *gen.resolution(stage)))
-y = dis(x, stage, alpha)
+y = dis(i.array, stage, alpha)
 dd = cg.build_computational_graph([y], variable_style=dvarstyle, function_style=dfuncstyle).dump()
 
 # Save as dot file
