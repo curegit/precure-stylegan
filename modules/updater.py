@@ -6,7 +6,7 @@ from chainer.functions import sum, batch_l2_norm_squared, softplus
 # Updater for Style GAN
 class StyleGanUpdater(StandardUpdater):
 
-	def __init__(self, generator, discriminator, iterator, optimizer, device, stage, alpha=1.0, delta=0.002, gamma=10):
+	def __init__(self, generator, discriminator, iterator, optimizer, device, stage, alpha=1.0, delta=0.00005, gamma=10):
 		super().__init__(iterator, optimizer, device=device)
 		self.alpha = alpha
 		self.delta = delta
@@ -49,6 +49,6 @@ class StyleGanUpdater(StandardUpdater):
 		self.generator_optimizer.update()
 
 		report({"alpha": self.alpha})
-		report({"loss_gen": loss_gen})
-		report({"loss_dis": loss_dis})
+		report({"loss (gen)": loss_gen})
+		report({"loss (dis)": loss_dis})
 		self.alpha += self.delta

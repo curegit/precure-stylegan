@@ -1,5 +1,5 @@
 import numpy as np
-from chainer import Chain, Sequential, Variable
+from chainer import Chain, Sequential
 from chainer.functions import mean, sqrt
 from modules.links import EqualizedLinear, LeakyReluLink
 from modules.gchains import InitialSynthesisNetwork, SynthesisNetwork
