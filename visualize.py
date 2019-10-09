@@ -1,5 +1,6 @@
-import pydot as dot
-import chainer.computational_graph as cg
+from chainer import Variable
+from chainer.computational_graph import build_computational_graph
+from pydot import graph_from_dot_data
 from modules.networks import Generator, Discriminator
 from modules.utilities import mkdirp, filepath, filerelpath
 
@@ -29,13 +30,13 @@ mkdirp(path)
 # Make generator graph
 gen = Generator(z_size)
 z = gen.generate_latent(batch)
-i = gen(z, stage, alpha)
-dg = cg.build_computational_graph([i], variable_style=gvarstyle, function_style=gfuncstyle).dump()
+i = gen(Variable(z), stage, alpha)
+dg = build_computational_graph([i], variable_style=gvarstyle, function_style=gfuncstyle).dump()
 
 # Make Discriminator graph
 dis = Discriminator()
-y = dis(i.array, stage, alpha)
-dd = cg.build_computational_graph([y], variable_style=dvarstyle, function_style=dfuncstyle).dump()
+y = dis(Variable(i.array), stage, alpha)
+dd = build_computational_graph([y], variable_style=dvarstyle, function_style=dfuncstyle).dump()
 
 # Save as dot file
 dg_path = filepath(path, filename_g, "dot")
@@ -48,7 +49,7 @@ with open(dd_path, "w") as f:
 # Save as PDF
 pg_path = filepath(path, filename_g, "pdf")
 pd_path = filepath(path, filename_d, "pdf")
-gg = dot.graph_from_dot_data(dg)[0]
-gd = dot.graph_from_dot_data(dd)[0]
+gg = graph_from_dot_data(dg)[0]
+gd = graph_from_dot_data(dd)[0]
 gg.write_pdf(pg_path)
 gd.write_pdf(pd_path)
