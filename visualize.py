@@ -7,6 +7,7 @@ from modules.utilities import mkdirp, filepath, filerelpath
 # Model params
 stage = 3
 z_size = 128
+depth = 6
 
 # Evaluation config
 batch = 2
@@ -28,7 +29,7 @@ path = filerelpath(directory)
 mkdirp(path)
 
 # Make generator graph
-gen = Generator(z_size)
+gen = Generator(z_size, depth)
 z = gen.generate_latent(batch)
 i = gen(Variable(z), stage, alpha)
 dg = build_computational_graph([i], variable_style=gvarstyle, function_style=gfuncstyle).dump()

@@ -69,11 +69,11 @@ class ImageGenerator(Chain):
 # Generator network
 class Generator(Chain):
 
-	def __init__(self, z_size):
+	def __init__(self, z_size=512, depth=8):
 		super().__init__()
 		self.z_size = z_size
 		with self.init_scope():
-			self.mapper = FeatureMapper(z_size, 8)
+			self.mapper = FeatureMapper(z_size, depth)
 			self.generator = ImageGenerator(z_size)
 
 	def __call__(self, z, stage, alpha=1.0):
