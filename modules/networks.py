@@ -77,7 +77,7 @@ class Generator(Chain):
 			self.generator = ImageGenerator(z_size)
 
 	def __call__(self, z, stage, alpha=1.0):
-		z = Variable(z)
+		z = z if type(z) is Variable else Variable(z)
 		return self.generator(self.mapper(z), stage, alpha)
 
 	def generate_latent(self, batch):
@@ -104,7 +104,7 @@ class Discriminator(Chain):
 			self.d9 = FinalDiscriminatorChain(512)
 
 	def __call__(self, x, stage, alpha=1.0):
-		x = Variable(x)
+		x = x if type(x) is Variable else Variable(x)
 		blend = 0 <= alpha < 1
 		h1 = self.d1(x, stage == 9) if stage >= 9 else x
 		h2 = self.d2(h1, stage == 8, alpha, self.ds(x) if stage == 9 and blend else None) if stage >= 8 else h1
