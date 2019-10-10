@@ -1,21 +1,19 @@
+from datetime import datetime
 from argparse import ArgumentParser
-
 from chainer import optimizers
 from chainer import serializers
 from chainer.iterators import MultiprocessIterator
-import chainer.training
-from chainer.training import extensions, Trainer
-
+from chainer.training import extensions, Trainer, make_extension
 from modules.updater import StyleGanUpdater
 from modules.dataset import StyleGanDataset
 from modules.networks import Generator, Discriminator
-from modules.utilities import filepath, save_image
+from modules.utilities import mkdirp, filepath, altfilepath, save_image
 
 # Parse command line arguments
 parser = ArgumentParser(allow_abbrev=False, description="Style-Based GAN's Trainer")
 parser.add_argument("datadir", metavar="DATA", help="")
 parser.add_argument("-p", "--preload", action="store_true", help="preload all dataset into RAM")
-#parser.add_argument("-d", "--directory", metavar="DEST", default="result", help="")
+parser.add_argument("-r", "--result", metavar="DEST", default="result", help="")
 parser.add_argument("-g", "--generator", metavar="FILE", help="")
 parser.add_argument("-d", "--discriminator", metavar="FILE", help="")
 parser.add_argument("-o", "--optimizers", metavar="FILE", nargs=3, help="optimizers of mapper, generator and discriminator")
@@ -48,6 +46,9 @@ h, w = generator.resolution(args.stage)
 dataset = StyleGanDataset(args.datadir, (w, h), args.preload)
 iterator = MultiprocessIterator(dataset, batch_size=batch, repeat=True, shuffle=True, n_processes=16)
 n = dataset.__len__()
+if n < 1:
+	print("No image found in dataset directory")
+	exit(1)
 
 # Print information
 print(f"Epoch: {epoch}, Batch: {batch}, Images: {n}")
@@ -69,30 +70,33 @@ if device >= 0:
 	discriminator.to_gpu(device)
 
 # Init optimizers
-opt_m = optimizers.Adam().setup(gen.mapper)
-if optmap is not None:
-	print("Load mapper optimizer")
-	serializers.load_hdf5(optmap, opt_m)
-
-opt_g = optimizers.Adam().setup(gen.generator)
-if optgen is not None:
-	print("Load generator optimizer")
-	serializers.load_hdf5(optgen, opt_g)
-
-opt_d = optimizers.Adam().setup(dis)
-if optdis is not None:
-	print("Load discriminator optimizer")
-	serializers.load_hdf5(optdis, opt_d)
+print("Initializing optimizers")
+mapper_optimizer = optimizers.Adam().setup(generator.mapper)
+generator_optimizer = optimizers.Adam().setup(generator.generator)
+discriminator_optimizer = optimizers.Adam().setup(discriminator)
 
 # Load optimizers
+if args.optimizers is not None:
+	print("Loading mapper's optimizer")
+	serializers.load_hdf5(args.optimizers[0], mapper_optimizer)
+	print("Loading generator's optimizer")
+	serializers.load_hdf5(args.optimizers[1], generator_optimizer)
+	print("Loading discriminator's optimizer")
+	serializers.load_hdf5(args.optimizers[2], discriminator_optimizer)
 
-updater = StyleGanUpdater(gen, dis, iterator, {"mapper": opt_m, "generator": opt_g, "discriminator": opt_d}, device, stage, alpha, delta)
+# Config chainer
+chainer.global_config.autotune = True
 
-trainer = Trainer(updater, (epoch, "epoch"), out='results')
+# Prepare updater
+updater = StyleGanUpdater(generator, discriminator, iterator, {"mapper": mapper_optimizer, "generator": generator_optimizer, "discriminator": discriminator_optimizer}, device, args.stage, alpha, delta)
 
-def output_image(gen, stage, dir, batch):
-	@chainer.training.make_extension()
-	def make_image(trainer):
+# Init result directory
+mkdirp(args.result)
+
+# 
+def output_s_images(generator, stage, directory, number, batch):
+	@make_extension()
+	def save_simage(trainer):
 		z = gen.generate_latent(batch)
 		y = gen(z, stage, alpha=trainer.updater.alpha)
 		y.to_cpu()
@@ -100,29 +104,30 @@ def output_image(gen, stage, dir, batch):
 			save_image(y.array[i], filepath(dir, f"{trainer.updater.iteration}_{i}", "png"))
 	return make_image
 
+#
+def 
 
-trainer.extend(extensions.LogReport(trigger=(1000, "iteration")))
-trainer.extend(extensions.PrintReport(["iteration", "alpha", "loss_gen", "loss_dis"]))
-trainer.extend(output_image(gen, stage, "result", 10), trigger=(1000, "iteration"))
+# Prepare trainer
+trainer = Trainer(updater, (epoch, "epoch"), out=args.result)
 trainer.extend(extensions.ProgressBar(update_interval=5))
+trainer.extend(extensions.LogReport(trigger=(1000, "iteration")))
+trainer.extend(extensions.PrintReport(["iteration", "alpha", "loss (gen)", "loss (dis)"]))
+trainer.extend(output_image(generator, stage, args.result, 20, batch), trigger=(1000, "iteration"))
 
-chainer.global_config.autotune = True
 
+# Run ML
 trainer.run()
 
-gen.to_cpu()
-dis.to_cpu()
+# Save models
+t = datetime.now().strftime("%y%m%d%H")
+print("Saving models")
+generator.to_cpu()
+discriminator.to_cpu()
+serializers.save_hdf5(altfilepath(filepath(args.result, f"gen{t}", "hdf5")), generator)
+serializers.save_hdf5(altfilepath(filepath(args.result, f"dis{t}", "hdf5")), discriminator)
 
-print("Save models")
-f = filerelpath("gen.hdf5")
-serializers.save_hdf5(f, gen)
-f = filerelpath("dis.hdf5")
-serializers.save_hdf5(f, dis)
-
-print("Save optimizers")
-f = filerelpath("optm.hdf5")
-serializers.save_hdf5(f, opt_m)
-f = filerelpath("optg.hdf5")
-serializers.save_hdf5(f, opt_g)
-f = filerelpath("optd.hdf5")
-serializers.save_hdf5(f, opt_d)
+# Save optimizers
+print("Saving optimizers")
+serializers.save_hdf5(altfilepath(filepath(args.result, f"mopt{t}", "hdf5")), mapper_optimizer)
+serializers.save_hdf5(altfilepath(filepath(args.result, f"gopt{t}", "hdf5")), generator_optimizer)
+serializers.save_hdf5(altfilepath(filepath(args.result, f"dopt{t}", "hdf5")), discriminator_optimizer)
