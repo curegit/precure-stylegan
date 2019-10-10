@@ -12,7 +12,7 @@ parser.add_argument("-p", "--prefix", help="filename prefix for generated images
 parser.add_argument("-g", "--generator", metavar="FILE", help="HDF5 file of serialized train model to load")
 parser.add_argument("-s", "--stage", type=int, choices=[1, 2, 3, 4, 5, 6, 7, 8, 9], default=7, help="growth stage, defining image resolution")
 parser.add_argument("-z", "--z-size", dest="size", type=int, default=512, help="latent vector (feature vector) size")
-parser.add_argument("-m", "--mlp-depth", dest="mlp", type=int, default=8, help="MLP depth of mapping network")
+parser.add_argument("-m", "--mlp-depth", metavar="DEPTH", dest="mlp", type=int, default=8, help="MLP depth of mapping network")
 parser.add_argument("-n", "--number", type=int, default=1, help="the number of images to generate")
 parser.add_argument("-b", "--batch", type=int, default=1, help="batch size, affecting memory usage")
 parser.add_argument("-v", "--device", type=int, default=-1, help="use specified GPU or CPU device")

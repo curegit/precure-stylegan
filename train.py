@@ -12,7 +12,7 @@ from modules.utilities import mkdirp, filepath, altfilepath, save_image
 
 # Parse command line arguments
 parser = ArgumentParser(allow_abbrev=False, description="Style-Based GAN's Trainer")
-parser.add_argument("datadir", metavar="DATA", help="")
+parser.add_argument("dataset", metavar="DATA", help="")
 parser.add_argument("-p", "--preload", action="store_true", help="preload all dataset into RAM")
 parser.add_argument("-r", "--result", metavar="DEST", default="result", help="")
 parser.add_argument("-g", "--generator", metavar="FILE", help="")
@@ -44,7 +44,7 @@ discriminator = Discriminator()
 
 # Prepare dataset
 h, w = generator.resolution(args.stage)
-dataset = StyleGanDataset(args.datadir, (w, h), args.preload)
+dataset = StyleGanDataset(args.dataset, (w, h), args.preload)
 iterator = MultiprocessIterator(dataset, batch_size=batch, repeat=True, shuffle=True, n_prefetch=4)
 n = dataset.length()
 if n < 1:
