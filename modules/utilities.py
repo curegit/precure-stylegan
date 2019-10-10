@@ -19,6 +19,14 @@ def filerelpath(relpath):
 	d = os.getcwd() if f == "<stdin>" else path.dirname(f)
 	return path.join(d, relpath)
 
+# Make alternate file path
+def altfilepath(fpath):
+	while path.lexists(fpath):
+		root, ext = path.splitext(fpath)
+		head, tail = path.split(root)
+		fpath = head + "_" + tail + ext
+	return fpath
+
 # Load image to return numpy array
 def load_image(path, size=None):
 	img = Image.open(path)
