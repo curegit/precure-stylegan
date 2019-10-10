@@ -38,13 +38,11 @@ class LeakyReluLink(Link):
 	def __call__(self, x):
 		return leaky_relu(x, self.a)
 
-# Clamped linear interpolation for array
+# Unclamped linear interpolation for array
 class LerpBlendLink(Link):
 
 	def __init__(self):
 		super().__init__()
 
 	def __call__(self, x, y, t):
-		if t <= 0.0: return x
-		if t >= 1.0: return y
 		return (1 - t) * x + t * y

@@ -1,5 +1,6 @@
 from datetime import datetime
 from argparse import ArgumentParser
+from chainer import global_config
 from chainer import optimizers
 from chainer import serializers
 from chainer.iterators import MultiprocessIterator
@@ -23,14 +24,14 @@ parser.add_argument("-m", "--mlp-depth", dest="mlp", type=int, default=8, help="
 parser.add_argument("-b", "--batch", type=int, default=4, help="batch size, affecting memory usage")
 parser.add_argument("-e", "--epoch", type=int, default=1, help="")
 parser.add_argument("-a", "--alpha", type=float, default=0.0, help="")
-parser.add_argument("-t", "--delta", type=float, default=2**-16, help="")
+parser.add_argument("-t", "--delta", type=float, default=2**-9, help="")
 parser.add_argument("-v", "--device", type=int, default=-1, help="use specified GPU or CPU device")
 args = parser.parse_args()
 
 # Validate arguments
 batch = max(1, args.batch)
 epoch = max(1, args.epoch)
-alpha = max(0.0, args.alpha)
+alpha = max(0.0, min(1.0, args.alpha))
 delta = max(0.0, args.delta)
 size = max(1, args.size)
 depth = max(1, args.mlp)
@@ -44,8 +45,8 @@ discriminator = Discriminator()
 # Prepare dataset
 h, w = generator.resolution(args.stage)
 dataset = StyleGanDataset(args.datadir, (w, h), args.preload)
-iterator = MultiprocessIterator(dataset, batch_size=batch, repeat=True, shuffle=True, n_processes=16)
-n = dataset.__len__()
+iterator = MultiprocessIterator(dataset, batch_size=batch, repeat=True, shuffle=True, n_prefetch=4)
+n = dataset.length()
 if n < 1:
 	print("No image found in dataset directory")
 	exit(1)
@@ -85,7 +86,7 @@ if args.optimizers is not None:
 	serializers.load_hdf5(args.optimizers[2], discriminator_optimizer)
 
 # Config chainer
-chainer.global_config.autotune = True
+global_config.autotune = True
 
 # Prepare updater
 updater = StyleGanUpdater(generator, discriminator, iterator, {"mapper": mapper_optimizer, "generator": generator_optimizer, "discriminator": discriminator_optimizer}, device, args.stage, alpha, delta)
@@ -93,27 +94,29 @@ updater = StyleGanUpdater(generator, discriminator, iterator, {"mapper": mapper_
 # Init result directory
 mkdirp(args.result)
 
-# 
-def output_s_images(generator, stage, directory, number, batch):
-	@make_extension()
-	def save_simage(trainer):
-		z = gen.generate_latent(batch)
-		y = gen(z, stage, alpha=trainer.updater.alpha)
-		y.to_cpu()
-		for i in range(batch):
-			save_image(y.array[i], filepath(dir, f"{trainer.updater.iteration}_{i}", "png"))
-	return make_image
-
 #
-def 
+def save_middle_images(generator, stage, directory, number, batch):
+	@make_extension()
+	def func(trainer):
+		c = 0
+		while c < number:
+			n = min(number - c, batch)
+			z = generator.generate_latent(n)
+			y = generator(z, args.stage)
+			y.to_cpu()
+			for i in range(n):
+				path = filepath(directory, f"{trainer.updater.iteration}_{c + i + 1}", "png")
+				save_image(y.array[i], path)
+			c += n
+	return func
 
 # Prepare trainer
 trainer = Trainer(updater, (epoch, "epoch"), out=args.result)
 trainer.extend(extensions.ProgressBar(update_interval=5))
 trainer.extend(extensions.LogReport(trigger=(1000, "iteration")))
 trainer.extend(extensions.PrintReport(["iteration", "alpha", "loss (gen)", "loss (dis)"]))
-trainer.extend(output_image(generator, stage, args.result, 20, batch), trigger=(1000, "iteration"))
-
+trainer.extend(extensions.PlotReport(["alpha", "loss (gen)", "loss (dis)"], "iteration", trigger=(10, "iteration"), file_name="loss.png"))
+trainer.extend(save_middle_images(generator, args.stage, args.result, 20, batch), trigger=(1000, "iteration"))
 
 # Run ML
 trainer.run()

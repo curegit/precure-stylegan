@@ -24,7 +24,7 @@ def altfilepath(fpath):
 	while path.lexists(fpath):
 		root, ext = path.splitext(fpath)
 		head, tail = path.split(root)
-		fpath = head + "_" + tail + ext
+		fpath = path.join(head, "_" + tail) + ext
 	return fpath
 
 # Load image to return numpy array

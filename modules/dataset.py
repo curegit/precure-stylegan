@@ -19,5 +19,8 @@ class StyleGanDataset(DatasetMixin):
 	def __len__(self):
 		return len(self.images)
 
+	def length(self):
+		return self.__len__()
+
 	def get_example(self, index):
 		return self.arraylist[index] if self.preload else load_image(self.images[index], self.size)
