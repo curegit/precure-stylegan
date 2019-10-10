@@ -44,6 +44,7 @@ if args.generator is not None:
 	print("Loading generator")
 	serializers.load_hdf5(args.generator, generator)
 
+# GPU setting
 if device >= 0:
 	print("Converting to GPU")
 	generator.to_gpu(device)
