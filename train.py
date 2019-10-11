@@ -1,3 +1,4 @@
+from os.path import basename
 from datetime import datetime
 from argparse import ArgumentParser
 from chainer import global_config
@@ -14,17 +15,20 @@ from modules.utilities import mkdirp, filepath, altfilepath, save_image
 parser = ArgumentParser(allow_abbrev=False, description="Style-Based GAN's Trainer")
 parser.add_argument("dataset", metavar="DATA", help="")
 parser.add_argument("-p", "--preload", action="store_true", help="preload all dataset into RAM")
-parser.add_argument("-r", "--result", metavar="DEST", default="result", help="")
+parser.add_argument("-c", "--current", action="store_true", help="")
+parser.add_argument("-x", "--no-datetime", dest="nodate", action="store_true", help="")
+parser.add_argument("-f", "--force", action="store_true", help="")
+parser.add_argument("-r", "--result", metavar="DEST", default="results", help="")
 parser.add_argument("-g", "--generator", metavar="FILE", help="")
 parser.add_argument("-d", "--discriminator", metavar="FILE", help="")
-parser.add_argument("-o", "--optimizers", metavar="FILE", nargs=3, help="optimizers of mapper, generator and discriminator")
+parser.add_argument("-o", "--optimizers", metavar="FILE", nargs=3, help="optimizers of mapper, generator, and discriminator")
 parser.add_argument("-s", "--stage", type=int, choices=[1, 2, 3, 4, 5, 6, 7, 8, 9], default=1, help="growth stage to train")
 parser.add_argument("-z", "--z-size", dest="size", type=int, default=512, help="latent vector (feature vector) size")
 parser.add_argument("-m", "--mlp-depth", dest="mlp", type=int, default=8, help="MLP depth of mapping network")
 parser.add_argument("-b", "--batch", type=int, default=4, help="batch size, affecting memory usage")
 parser.add_argument("-e", "--epoch", type=int, default=1, help="")
 parser.add_argument("-a", "--alpha", type=float, default=0.0, help="")
-parser.add_argument("-t", "--delta", type=float, default=2**-9, help="")
+parser.add_argument("-t", "--delta", type=float, default=2**-8, help="")
 parser.add_argument("-v", "--device", type=int, default=-1, help="use specified GPU or CPU device")
 args = parser.parse_args()
 
@@ -94,7 +98,7 @@ updater = StyleGanUpdater(generator, discriminator, iterator, {"mapper": mapper_
 # Init result directory
 mkdirp(args.result)
 
-#
+# Define extension to output images in progress
 def save_middle_images(generator, stage, directory, number, batch):
 	@make_extension()
 	def func(trainer):
@@ -102,35 +106,53 @@ def save_middle_images(generator, stage, directory, number, batch):
 		while c < number:
 			n = min(number - c, batch)
 			z = generator.generate_latent(n)
-			y = generator(z, args.stage)
+			y = generator(z, stage)
 			y.to_cpu()
 			for i in range(n):
-				path = filepath(directory, f"{trainer.updater.iteration}_{c + i + 1}", "png")
+				path = filepath(directory, f"{stage}_{trainer.updater.iteration}_{c + i + 1}", "png")
 				save_image(y.array[i], path)
 			c += n
 	return func
 
 # Prepare trainer
 trainer = Trainer(updater, (epoch, "epoch"), out=args.result)
-trainer.extend(extensions.ProgressBar(update_interval=5))
+trainer.extend(extensions.ProgressBar(update_interval=10))
 trainer.extend(extensions.LogReport(trigger=(1000, "iteration")))
 trainer.extend(extensions.PrintReport(["iteration", "alpha", "loss (gen)", "loss (dis)"]))
-trainer.extend(extensions.PlotReport(["alpha", "loss (gen)", "loss (dis)"], "iteration", trigger=(10, "iteration"), file_name="loss.png"))
-trainer.extend(save_middle_images(generator, args.stage, args.result, 20, batch), trigger=(1000, "iteration"))
+trainer.extend(extensions.PlotReport(["alpha", "loss (gen)", "loss (dis)"], "iteration", trigger=(400, "iteration"), file_name="loss.png"))
+trainer.extend(save_middle_images(generator, args.stage, args.result, 10, batch), trigger=(1000, "iteration"))
 
 # Run ML
 trainer.run()
 
 # Save models
-t = datetime.now().strftime("%y%m%d%H")
 print("Saving models")
 generator.to_cpu()
 discriminator.to_cpu()
-serializers.save_hdf5(altfilepath(filepath(args.result, f"gen{t}", "hdf5")), generator)
-serializers.save_hdf5(altfilepath(filepath(args.result, f"dis{t}", "hdf5")), discriminator)
+t = datetime.now().strftime("%m%d%H")
+gname = f"gen{'' if args.nodate else t}"
+dname = f"dis{'' if args.nodate else t}"
+gpath = filepath("." if args.current else args.result, gname, "hdf5")
+dpath = filepath("." if args.current else args.result, dname, "hdf5")
+gpath = gpath if args.force else altfilepath(gpath)
+dpath = dpath if args.force else altfilepath(dpath)
+serializers.save_hdf5(gpath, generator)
+print(f"Generator saved as {basename(gpath)}")
+serializers.save_hdf5(dpath, discriminator)
+print(f"Discriminator saved as {basename(dpath)}")
 
 # Save optimizers
 print("Saving optimizers")
-serializers.save_hdf5(altfilepath(filepath(args.result, f"mopt{t}", "hdf5")), mapper_optimizer)
-serializers.save_hdf5(altfilepath(filepath(args.result, f"gopt{t}", "hdf5")), generator_optimizer)
-serializers.save_hdf5(altfilepath(filepath(args.result, f"dopt{t}", "hdf5")), discriminator_optimizer)
+omname = f"mopt{'' if args.nodate else t}"
+ogname = f"gopt{'' if args.nodate else t}"
+odname = f"dopt{'' if args.nodate else t}"
+ompath = filepath("." if args.current else args.result, omname, "hdf5")
+ogpath = filepath("." if args.current else args.result, ogname, "hdf5")
+odpath = filepath("." if args.current else args.result, odname, "hdf5")
+ompath = ompath if args.force else altfilepath(ompath)
+ogpath = ogpath if args.force else altfilepath(ogpath)
+odpath = odpath if args.force else altfilepath(odpath)
+serializers.save_hdf5(ompath, mapper_optimizer)
+serializers.save_hdf5(ogpath, generator_optimizer)
+serializers.save_hdf5(odpath, discriminator_optimizer)
+print(f"Optimizers saved as {basename(ompath)}, {basename(ogpath)}, and {basename(odpath)}")
