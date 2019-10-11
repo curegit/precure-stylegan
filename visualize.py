@@ -1,6 +1,6 @@
+from pydot import graph_from_dot_data
 from chainer import Variable
 from chainer.computational_graph import build_computational_graph
-from pydot import graph_from_dot_data
 from modules.networks import Generator, Discriminator
 from modules.utilities import mkdirp, filepath, filerelpath
 
