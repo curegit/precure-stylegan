@@ -1,11 +1,9 @@
 from os.path import basename
 from datetime import datetime
 from argparse import ArgumentParser
-from chainer import global_config
-from chainer import optimizers
-from chainer import serializers
+from chainer import optimizers, serializers, global_config
 from chainer.iterators import MultiprocessIterator
-from chainer.training import extensions, Trainer, make_extension
+from chainer.training import Trainer, extensions, make_extension
 from modules.updater import StyleGanUpdater
 from modules.dataset import StyleGanDataset
 from modules.networks import Generator, Discriminator
@@ -13,15 +11,15 @@ from modules.utilities import mkdirp, filepath, altfilepath, save_image
 
 # Parse command line arguments
 parser = ArgumentParser(allow_abbrev=False, description="Style-Based GAN's Trainer")
-parser.add_argument("dataset", metavar="DATA", help="")
+parser.add_argument("dataset", metavar="DATA", help="dataset directory which stores images")
 parser.add_argument("-p", "--preload", action="store_true", help="preload all dataset into RAM")
-parser.add_argument("-c", "--current", action="store_true", help="")
-parser.add_argument("-x", "--no-datetime", dest="nodate", action="store_true", help="")
-parser.add_argument("-f", "--force", action="store_true", help="")
-parser.add_argument("-r", "--result", metavar="DEST", default="results", help="")
-parser.add_argument("-g", "--generator", metavar="FILE", help="")
-parser.add_argument("-d", "--discriminator", metavar="FILE", help="")
-parser.add_argument("-o", "--optimizers", metavar="FILE", nargs=3, help="optimizers of mapper, generator, and discriminator")
+parser.add_argument("-c", "--current", action="store_true", help="save completed models in current directory")
+parser.add_argument("-x", "--no-datetime", dest="nodate", action="store_true", help="don't add datetime prefix to model files")
+parser.add_argument("-f", "--force", action="store_true", help="allow overwrite existing files")
+parser.add_argument("-r", "--result", metavar="DEST", default="results", help="destination directory for models, logs, middle images, and so on")
+parser.add_argument("-g", "--generator", metavar="FILE", help="HDF5 file of serialized trained generator to load and retrain")
+parser.add_argument("-d", "--discriminator", metavar="FILE", help="HDF5 file of serialized trained discriminator to load and retrain")
+parser.add_argument("-o", "--optimizers", metavar="FILE", nargs=3, help="Snapshot of optimizers of mapper, generator, and discriminator")
 parser.add_argument("-s", "--stage", type=int, choices=[1, 2, 3, 4, 5, 6, 7, 8, 9], default=1, help="growth stage to train")
 parser.add_argument("-z", "--z-size", dest="size", type=int, default=512, help="latent vector (feature vector) size")
 parser.add_argument("-m", "--mlp-depth", dest="mlp", type=int, default=8, help="MLP depth of mapping network")
