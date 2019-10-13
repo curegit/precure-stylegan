@@ -14,7 +14,8 @@ parser = ArgumentParser(allow_abbrev=False, description="Style-Based GAN's Train
 parser.add_argument("dataset", metavar="DATA", help="dataset directory which stores images")
 parser.add_argument("-p", "--preload", action="store_true", help="preload all dataset into RAM")
 parser.add_argument("-c", "--current", action="store_true", help="save completed models in current directory")
-parser.add_argument("-x", "--no-datetime", dest="nodate", action="store_true", help="don't add datetime prefix to model files")
+parser.add_argument("-n", "--no-autosave", dest="nosave", action="store_true", help="don't save middle model snapshots")
+parser.add_argument("-x", "--no-datetime", dest="nodate", action="store_true", help="don't add date time prefix to completed model files")
 parser.add_argument("-f", "--force", action="store_true", help="allow overwrite existing files")
 parser.add_argument("-r", "--result", metavar="DEST", default="results", help="destination directory for models, logs, middle images, and so on")
 parser.add_argument("-g", "--generator", metavar="FILE", help="HDF5 file of serialized trained generator to load and retrain")
@@ -112,6 +113,33 @@ def save_middle_images(generator, stage, directory, number, batch):
 			c += n
 	return func
 
+# Define extension to save models in progress
+def save_middle_models(generator, discriminator, stage, directory, device):
+	@make_extension()
+	def func(trainer):
+		generator.to_cpu()
+		discriminator.to_cpu()
+		path = filepath(directory, f"gen_{stage}_{trainer.updater.iteration}", "hdf5")
+		serializers.save_hdf5(path, generator)
+		path = filepath(directory, f"dis_{stage}_{trainer.updater.iteration}", "hdf5")
+		serializers.save_hdf5(path, discriminator)
+		if device >= 0:
+			generator.to_gpu(device)
+			discriminator.to_gpu(device)
+	return func
+
+# Define extension to save optimizers in progress
+def save_middle_optimizers(mapper_optimizer, generator_optimizer, discriminator_optimizer, stage, directory):
+	@make_extension()
+	def func(trainer):
+		path = filepath(directory, f"mopt_{stage}_{trainer.updater.iteration}", "hdf5")
+		serializers.save_hdf5(path, mapper_optimizer)
+		path = filepath(directory, f"gopt_{stage}_{trainer.updater.iteration}", "hdf5")
+		serializers.save_hdf5(path, generator_optimizer)
+		path = filepath(directory, f"dopt_{stage}_{trainer.updater.iteration}", "hdf5")
+		serializers.save_hdf5(path, discriminator_optimizer)
+	return func
+
 # Prepare trainer
 trainer = Trainer(updater, (epoch, "epoch"), out=args.result)
 trainer.extend(extensions.ProgressBar(update_interval=10))
@@ -119,6 +147,9 @@ trainer.extend(extensions.LogReport(trigger=(1000, "iteration")))
 trainer.extend(extensions.PrintReport(["iteration", "alpha", "loss (gen)", "loss (dis)"]))
 trainer.extend(extensions.PlotReport(["alpha", "loss (gen)", "loss (dis)"], "iteration", trigger=(400, "iteration"), file_name="loss.png"))
 trainer.extend(save_middle_images(generator, args.stage, args.result, 10, batch), trigger=(1000, "iteration"))
+if not args.nosave:
+	trainer.extend(save_middle_models(generator, discriminator, args.stage, args.result, device), trigger=(3000, "iteration"))
+	trainer.extend(save_middle_optimizers(mapper_optimizer, generator_optimizer, discriminator_optimizer, args.stage, args.result), trigger=(3000, "iteration"))
 
 # Run ML
 trainer.run()
