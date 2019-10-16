@@ -1,4 +1,5 @@
 from os.path import basename
+from shutil import rmtree
 from datetime import datetime
 from argparse import ArgumentParser
 from chainer import optimizers, serializers, global_config
@@ -17,6 +18,7 @@ parser.add_argument("-c", "--current", action="store_true", help="save completed
 parser.add_argument("-n", "--no-autosave", dest="nosave", action="store_true", help="don't save middle model snapshots")
 parser.add_argument("-x", "--no-datetime", dest="nodate", action="store_true", help="don't add date time prefix to completed model files")
 parser.add_argument("-f", "--force", action="store_true", help="allow overwrite existing files")
+parser.add_argument("-w", "--wipe", action="store_true", help="")
 parser.add_argument("-r", "--result", metavar="DEST", default="results", help="destination directory for models, logs, middle images, and so on")
 parser.add_argument("-g", "--generator", metavar="FILE", help="HDF5 file of serialized trained generator to load and retrain")
 parser.add_argument("-d", "--discriminator", metavar="FILE", help="HDF5 file of serialized trained discriminator to load and retrain")
@@ -95,6 +97,8 @@ global_config.autotune = True
 updater = StyleGanUpdater(generator, discriminator, iterator, {"mapper": mapper_optimizer, "generator": generator_optimizer, "discriminator": discriminator_optimizer}, device, args.stage, alpha, delta)
 
 # Init result directory
+if args.wipe:
+	rmtree(args.result, ignore_errors=True)
 mkdirp(args.result)
 
 # Define extension to output images in progress
