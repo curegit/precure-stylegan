@@ -29,7 +29,7 @@ def altfilepath(fpath):
 
 # Load image to return numpy array
 def load_image(path, size=None):
-	img = Image.open(path)
+	img = Image.open(path).convert("RGB")
 	if size is not None: img = img.resize(size, Image.LANCZOS)
 	return asarray(img, dtype=uint8).transpose(2, 0, 1).astype(float32) / 255
 
