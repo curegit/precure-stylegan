@@ -92,6 +92,7 @@ if args.optimizers is not None:
 
 # Config chainer
 global_config.autotune = True
+global_config.cudnn_deterministic = False
 
 # Prepare updater
 updater = StyleGanUpdater(generator, discriminator, iterator, {"mapper": mapper_optimizer, "generator": generator_optimizer, "discriminator": discriminator_optimizer}, device, args.stage, alpha, delta)
