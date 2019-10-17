@@ -110,30 +110,33 @@ if args.wipe:
 mkdirp(args.result)
 
 # Define extension to output images in progress
-def save_middle_images(generator, stage, directory, number, batch):
+def save_middle_images(generator, stage, directory, number, batch, force=True):
 	@make_extension()
 	def func(trainer):
 		c = 0
 		while c < number:
 			n = min(number - c, batch)
 			z = generator.generate_latent(n)
-			y = generator(z, stage)
+			y = generator(z, stage, trainer.updater.alpha)
 			y.to_cpu()
 			for i in range(n):
-				path = filepath(directory, f"{stage}_{trainer.updater.iteration}_{c + i + 1}", "png")
+				path = filepath(directory, f"{stage}_{trainer.updater.iteration}_{trainer.updater.alpha:.3f}_{c + i + 1}", "png")
+				path = path if force else altfilepath(path)
 				save_image(y.array[i], path)
 			c += n
 	return func
 
 # Define extension to save models in progress
-def save_middle_models(generator, discriminator, stage, directory, device):
+def save_middle_models(generator, discriminator, stage, directory, device, force=True):
 	@make_extension()
 	def func(trainer):
 		generator.to_cpu()
 		discriminator.to_cpu()
 		path = filepath(directory, f"gen_{stage}_{trainer.updater.iteration}", "hdf5")
+		path = path if force else altfilepath(path)
 		serializers.save_hdf5(path, generator)
 		path = filepath(directory, f"dis_{stage}_{trainer.updater.iteration}", "hdf5")
+		path = path if force else altfilepath(path)
 		serializers.save_hdf5(path, discriminator)
 		if device >= 0:
 			generator.to_gpu(device)
@@ -141,25 +144,33 @@ def save_middle_models(generator, discriminator, stage, directory, device):
 	return func
 
 # Define extension to save optimizers in progress
-def save_middle_optimizers(mapper_optimizer, generator_optimizer, discriminator_optimizer, stage, directory):
+def save_middle_optimizers(mapper_optimizer, generator_optimizer, discriminator_optimizer, stage, directory, force=True):
 	@make_extension()
 	def func(trainer):
 		path = filepath(directory, f"mopt_{stage}_{trainer.updater.iteration}", "hdf5")
+		path = path if force else altfilepath(path)
 		serializers.save_hdf5(path, mapper_optimizer)
 		path = filepath(directory, f"gopt_{stage}_{trainer.updater.iteration}", "hdf5")
+		path = path if force else altfilepath(path)
 		serializers.save_hdf5(path, generator_optimizer)
 		path = filepath(directory, f"dopt_{stage}_{trainer.updater.iteration}", "hdf5")
+		path = path if force else altfilepath(path)
 		serializers.save_hdf5(path, discriminator_optimizer)
 	return func
 
 # Prepare trainer
+logpath = filepath(args.result, "report", "log")
+logname = basename(logpath if args.force else altfilepath(logpath))
+plotpath = filepath(args.result, "report", "png")
+plotname = basename(plotpath if args.force else altfilepath(plotpath))
 trainer = Trainer(updater, (epoch, "epoch"), out=args.result)
-trainer.extend(extensions.ProgressBar(update_interval=10))
+if args.interval > 0:
+	trainer.extend(extensions.ProgressBar(update_interval=args.interval))
 trainer.extend(extensions.LogReport(trigger=(1000, "iteration")))
+#trainer.extend(extensions.LogReport(trigger=(1000, "iteration"), filename=logname))
 trainer.extend(extensions.PrintReport(["iteration", "alpha", "loss (gen)", "loss (dis)"]))
 trainer.extend(extensions.PlotReport(["alpha", "loss (gen)", "loss (dis)"], "iteration", trigger=(400, "iteration")))
 #trainer.extend(extensions.PlotReport(["alpha", "loss (gen)", "loss (dis)"], "iteration", trigger=(400, "iteration"), filename=plotname))
-
 trainer.extend(save_middle_images(generator, stage, args.result, 10, batch, args.force), trigger=(1000, "iteration"))
 if not args.nosave:
 	trainer.extend(save_middle_models(generator, discriminator, stage, args.result, device, args.force), trigger=(3000, "iteration"))
