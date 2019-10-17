@@ -183,9 +183,10 @@ trainer.run()
 print("Saving models")
 generator.to_cpu()
 discriminator.to_cpu()
+n = f"s{stage}x{args.maxstage}c{channels[0]}-{channels[1]}z{size}m{depth}"
 t = datetime.now().strftime("%m%d%H")
-gname = f"gen{'' if args.nodate else t}"
-dname = f"dis{'' if args.nodate else t}"
+gname = f"gen{'' if args.noinfo else f'_{n}'}{'' if args.nodate else f'_{t}'}"
+dname = f"dis{'' if args.noinfo else f'_{n}'}{'' if args.nodate else f'_{t}'}"
 gpath = filepath("." if args.current else args.result, gname, "hdf5")
 dpath = filepath("." if args.current else args.result, dname, "hdf5")
 gpath = gpath if args.force else altfilepath(gpath)
@@ -197,9 +198,9 @@ print(f"Discriminator: saved as {basename(dpath)}")
 
 # Save optimizers
 print("Saving optimizers")
-omname = f"mopt{'' if args.nodate else t}"
-ogname = f"gopt{'' if args.nodate else t}"
-odname = f"dopt{'' if args.nodate else t}"
+omname = f"mopt{'' if args.noinfo else f'_{n}'}{'' if args.nodate else f'_{t}'}"
+ogname = f"gopt{'' if args.noinfo else f'_{n}'}{'' if args.nodate else f'_{t}'}"
+odname = f"dopt{'' if args.noinfo else f'_{n}'}{'' if args.nodate else f'_{t}'}"
 ompath = filepath("." if args.current else args.result, omname, "hdf5")
 ogpath = filepath("." if args.current else args.result, ogname, "hdf5")
 odpath = filepath("." if args.current else args.result, odname, "hdf5")
