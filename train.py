@@ -29,6 +29,7 @@ parser.add_argument("-x", "--max-stage", dest="maxstage", type=int, choices=[1, 
 parser.add_argument("-c", "--channels", metavar="CH", type=int, nargs=2, default=(512, 16), help="")
 parser.add_argument("-z", "--z-size", dest="size", type=int, default=512, help="latent vector (feature vector) size")
 parser.add_argument("-m", "--mlp-depth", dest="mlp", type=int, default=8, help="MLP depth of mapping network")
+parser.add_argument("-n", "--number", type=int, default=10, help="the number of middle images to generate")
 parser.add_argument("-b", "--batch", type=int, default=4, help="batch size, affecting memory usage")
 parser.add_argument("-e", "--epoch", type=int, default=1, help="")
 parser.add_argument("-a", "--alpha", type=float, default=0.0, help="")
@@ -38,6 +39,7 @@ parser.add_argument("-v", "--device", type=int, default=-1, help="use specified 
 args = parser.parse_args()
 
 # Validate arguments
+number = max(0, args.number)
 batch = max(1, args.batch)
 epoch = max(1, args.epoch)
 alpha = max(0.0, min(1.0, args.alpha))
@@ -171,7 +173,7 @@ trainer.extend(extensions.LogReport(trigger=(1000, "iteration")))
 trainer.extend(extensions.PrintReport(["iteration", "alpha", "loss (gen)", "loss (dis)"]))
 trainer.extend(extensions.PlotReport(["alpha", "loss (gen)", "loss (dis)"], "iteration", trigger=(400, "iteration")))
 #trainer.extend(extensions.PlotReport(["alpha", "loss (gen)", "loss (dis)"], "iteration", trigger=(400, "iteration"), filename=plotname))
-trainer.extend(save_middle_images(generator, stage, args.result, 10, batch, args.force), trigger=(1000, "iteration"))
+trainer.extend(save_middle_images(generator, stage, args.result, number, batch, args.force), trigger=(1000, "iteration"))
 if not args.nosave:
 	trainer.extend(save_middle_models(generator, discriminator, stage, args.result, device, args.force), trigger=(3000, "iteration"))
 	trainer.extend(save_middle_optimizers(mapper_optimizer, generator_optimizer, discriminator_optimizer, stage, args.result, args.force), trigger=(3000, "iteration"))
