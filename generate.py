@@ -11,6 +11,8 @@ parser.add_argument("-d", "--directory", metavar="DEST", default=".", help="dest
 parser.add_argument("-p", "--prefix", help="filename prefix for generated images")
 parser.add_argument("-g", "--generator", metavar="FILE", help="HDF5 file of serialized trained model to load")
 parser.add_argument("-s", "--stage", type=int, choices=[1, 2, 3, 4, 5, 6, 7, 8, 9], default=7, help="growth stage, defining image resolution")
+parser.add_argument("-x", "--max-stage", dest="maxstage", type=int, choices=[1, 2, 3, 4, 5, 6, 7, 8, 9], default=9, help="")
+parser.add_argument("-c", "--channels", type=int, nargs=2, default=(512, 16), help="")
 parser.add_argument("-z", "--z-size", dest="size", type=int, default=512, help="latent vector (feature vector) size")
 parser.add_argument("-m", "--mlp-depth", metavar="DEPTH", dest="mlp", type=int, default=8, help="MLP depth of mapping network")
 parser.add_argument("-n", "--number", type=int, default=1, help="the number of images to generate")
@@ -21,6 +23,8 @@ args = parser.parse_args()
 # Validate arguments
 number = max(0, args.number)
 batch = max(1, args.batch)
+stage = min(args.stage, args.maxstage)
+channels = (max(1, args.channels[0]), max(1, args.channels[1]))
 size = max(1, args.size)
 depth = max(1, args.mlp)
 device = max(-1, args.device)
@@ -28,12 +32,13 @@ prefix = basename(args.prefix or "")
 
 # Init model
 print("Initializing model")
-generator = Generator(size, depth)
+generator = Generator(size, depth, channels, args.maxstage)
 
 # Print information
-h, w = generator.resolution(args.stage)
+h, w = generator.resolution(stage)
 print(f"Total: {number}, Batch: {batch}")
-print(f"MLP: {size}x{depth}, Stage: {args.stage} ({w}x{h})")
+print(f"MLP: {size}x{depth}, Stage: {stage}/{args.maxstage} ({w}x{h})")
+print(f"Channel: {channels[0]} (initial) -> {channels[1]} (final)")
 print(f"Device: {'CPU' if device < 0 else f'GPU {device}'}")
 
 # Make destination folder
@@ -54,7 +59,7 @@ c = 0
 while c < number:
 	n = min(number - c, batch)
 	z = generator.generate_latent(n)
-	y = generator(z, args.stage)
+	y = generator(z, stage)
 	y.to_cpu()
 	for i in range(n):
 		path = filepath(args.directory, f"{prefix}{c + i + 1}", "png")
