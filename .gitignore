@@ -1,6 +1,8 @@
 # This project
 *.dot
 *.pdf
+*.nvp
+*.hdf5
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
