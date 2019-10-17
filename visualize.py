@@ -6,6 +6,8 @@ from modules.utilities import mkdirp, filepath, filerelpath
 
 # Model params
 stage = 3
+max_stage = 7
+channels = (256, 16)
 z_size = 128
 depth = 6
 
@@ -29,13 +31,13 @@ path = filerelpath(directory)
 mkdirp(path)
 
 # Make generator graph
-gen = Generator(z_size, depth)
+gen = Generator(z_size, depth, channels, max_stage)
 z = gen.generate_latent(batch)
 i = gen(Variable(z), stage, alpha)
 dg = build_computational_graph([i], variable_style=gvarstyle, function_style=gfuncstyle).dump()
 
 # Make Discriminator graph
-dis = Discriminator()
+dis = Discriminator(channels, max_stage)
 y = dis(Variable(i.array), stage, alpha)
 dd = build_computational_graph([y], variable_style=dvarstyle, function_style=dfuncstyle).dump()
 
