@@ -77,7 +77,7 @@ if device >= 0:
 
 # Init optimizers
 print("Initializing optimizers")
-mapper_optimizer = optimizers.Adam(alpha=0.001, beta1=0.0, beta2=0.99, eps=1e-08).setup(generator.mapper)
+mapper_optimizer = optimizers.Adam(alpha=0.00001, beta1=0.0, beta2=0.99, eps=1e-08).setup(generator.mapper)
 generator_optimizer = optimizers.Adam(alpha=0.001, beta1=0.0, beta2=0.99, eps=1e-08).setup(generator.generator)
 discriminator_optimizer = optimizers.Adam(alpha=0.001, beta1=0.0, beta2=0.99, eps=1e-08).setup(discriminator)
 
