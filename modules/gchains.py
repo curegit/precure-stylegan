@@ -1,7 +1,7 @@
 import numpy as np
 from chainer import Chain, Parameter, Variable
 from chainer.links import Scale
-from chainer.functions import mean, sqrt, broadcast_to, unpooling_2d
+from chainer.functions import mean, sqrt, broadcast_to, resize_images
 from chainer.initializers import Zero, One
 from modules.links import EqualizedLinear, EqualizedConvolution2D, LeakyReluLink, LerpBlendLink
 
@@ -24,7 +24,7 @@ class Upsampler(Chain):
 
 	def __call__(self, x):
 		height, width = x.shape[2:]
-		return unpooling_2d(x, ksize=2, stride=2, pad=0, outsize=(height * 2, width * 2))
+		return resize_images(x, (height * 2, width * 2))
 
 # Noise injection layer
 class NoiseAdder(Chain):
