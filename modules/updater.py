@@ -1,3 +1,4 @@
+from random import random
 from chainer import grad, Variable
 from chainer.reporter import report
 from chainer.training import StandardUpdater
@@ -6,12 +7,13 @@ from chainer.functions import sum, batch_l2_norm_squared, softplus
 # Updater for Style GAN
 class StyleGanUpdater(StandardUpdater):
 
-	def __init__(self, generator, discriminator, iterator, optimizer, device, stage, alpha=0.0, delta=0.00005, gamma=10):
+	def __init__(self, generator, discriminator, iterator, optimizer, device, stage, mixing=0.9, alpha=0.0, delta=0.00005, gamma=10):
 		super().__init__(iterator, optimizer, device=device)
 		self.alpha = alpha
 		self.delta = delta
 		self.gamma = gamma
 		self.stage = stage
+		self.mixing = mixing
 		self.generator = generator
 		self.discriminator = discriminator
 		self.mapper_optimizer = optimizer["mapper"]
@@ -30,7 +32,11 @@ class StyleGanUpdater(StandardUpdater):
 		gradient_norm = sum(batch_l2_norm_squared(gradient)) / batchsize
 		loss_gamma = self.gamma * gradient_norm / 2
 		z = self.generator.generate_latent(batchsize)
-		x_fake = self.generator(Variable(z), self.stage, self.alpha)
+		if self.mixing > random():
+			mix_z = self.generator.generate_latent(batchsize)
+			x_fake = self.generator(Variable(z), self.stage, self.alpha, Variable(mix_z))
+		else:
+			x_fake = self.generator(Variable(z), self.stage, self.alpha)
 		y_fake = self.discriminator(x_fake, self.stage, self.alpha)
 		loss_dis = sum(softplus(-y_real)) / batchsize
 		loss_dis += sum(softplus(y_fake)) / batchsize
@@ -42,7 +48,11 @@ class StyleGanUpdater(StandardUpdater):
 
 		# Train generator
 		z = self.generator.generate_latent(batchsize)
-		x_fake = self.generator(Variable(z), self.stage, self.alpha)
+		if self.mixing > random():
+			mix_z = self.generator.generate_latent(batchsize)
+			x_fake = self.generator(Variable(z), self.stage, self.alpha, Variable(mix_z))
+		else:
+			x_fake = self.generator(Variable(z), self.stage, self.alpha)
 		y_fake = self.discriminator(x_fake, self.stage, self.alpha)
 		loss_gen = sum(softplus(-y_fake)) / batchsize
 		self.generator.cleargrads()

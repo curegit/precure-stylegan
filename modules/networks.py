@@ -1,4 +1,5 @@
 import numpy as np
+from random import randint
 from chainer import Chain, Sequential
 from chainer.functions import mean, sqrt
 from modules.links import EqualizedLinear, LeakyReluLink
@@ -35,34 +36,35 @@ class ImageGenerator(Chain):
 			if max_stage >= 8: self.s8 = SynthesisNetwork(min(init_channel, final_channel * 2 ** (max_stage - 7)), min(init_channel, final_channel * 2 ** (max_stage - 8)), w_size)
 			if max_stage >= 9: self.s9 = SynthesisNetwork(min(init_channel, final_channel * 2 ** (max_stage - 8)), final_channel, w_size)
 
-	def __call__(self, w, stage, alpha=1.0):
+	def __call__(self, w, stage, alpha=1.0, mix_w=None, mix_stage=None):
 		blend = 0 <= alpha < 1
+		mix = mix_stage or (10 if mix_w is None or stage < 2 else randint(2, stage))
 		last, up = stage == 1, stage == 2 and blend
-		h1, rgb = self.s1(w, last, up)
+		h1, rgb = self.s1(w if mix > 1 else mix_w, last, up)
 		if last: return h1
 		last, up = stage == 2, stage == 3 and blend
-		h2, rgb = self.s2(h1, w, last, up, alpha, rgb)
+		h2, rgb = self.s2(h1, w if mix > 2 else mix_w, last, up, alpha, rgb)
 		if last: return h2
 		last, up = stage == 3, stage == 4 and blend
-		h3, rgb = self.s3(h2, w, last, up, alpha, rgb)
+		h3, rgb = self.s3(h2, w if mix > 3 else mix_w, last, up, alpha, rgb)
 		if last: return h3
 		last, up = stage == 4, stage == 5 and blend
-		h4, rgb = self.s4(h3, w, last, up, alpha, rgb)
+		h4, rgb = self.s4(h3, w if mix > 4 else mix_w, last, up, alpha, rgb)
 		if last: return h4
 		last, up = stage == 5, stage == 6 and blend
-		h5, rgb = self.s5(h4, w, last, up, alpha, rgb)
+		h5, rgb = self.s5(h4, w if mix > 5 else mix_w, last, up, alpha, rgb)
 		if last: return h5
 		last, up = stage == 6, stage == 7 and blend
-		h6, rgb = self.s6(h5, w, last, up, alpha, rgb)
+		h6, rgb = self.s6(h5, w if mix > 6 else mix_w, last, up, alpha, rgb)
 		if last: return h6
 		last, up = stage == 7, stage == 8 and blend
-		h7, rgb = self.s7(h6, w, last, up, alpha, rgb)
+		h7, rgb = self.s7(h6, w if mix > 7 else mix_w, last, up, alpha, rgb)
 		if last: return h7
 		last, up = stage == 8, stage == 9 and blend
-		h8, rgb = self.s8(h7, w, last, up, alpha, rgb)
+		h8, rgb = self.s8(h7, w if mix > 8 else mix_w, last, up, alpha, rgb)
 		if last: return h8
 		last, up = stage == 9, stage >= 10
-		h9, rgb = self.s9(h8, w, last, up, alpha, rgb)
+		h9, rgb = self.s9(h8, w if mix > 9 else mix_w, last, up, alpha, rgb)
 		if last: return h9
 		return rgb
 
@@ -76,8 +78,8 @@ class Generator(Chain):
 			self.mapper = FeatureMapper(z_size, depth)
 			self.generator = ImageGenerator(z_size, *channels, max_stage)
 
-	def __call__(self, z, stage, alpha=1.0):
-		return self.generator(self.mapper(z), stage, alpha)
+	def __call__(self, z, stage, alpha=1.0, mix_z=None, mix_stage=None):
+		return self.generator(self.mapper(z), stage, alpha, None if mix_z is None else self.mapper(mix_z), mix_stage)
 
 	def generate_latent(self, batch):
 		return self.xp.random.normal(size=(batch, self.z_size)).astype(self.xp.float32) if self.xp == np else self.xp.random.normal(size=(batch, self.z_size), dtype=self.xp.float32)

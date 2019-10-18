@@ -16,7 +16,7 @@ parser.add_argument("dataset", metavar="DATASETDIR", help="dataset directory whi
 parser.add_argument("-p", "--preload", action="store_true", help="preload all dataset into RAM")
 parser.add_argument("-k", "--current", action="store_true", help="save completed models in current directory")
 parser.add_argument("-u", "--no-autosave", dest="nosave", action="store_true", help="don't save middle model snapshots")
-parser.add_argument("-i", "--no-netinfo", dest="noinfo", action="store_true", help="")
+parser.add_argument("-j", "--no-netinfo", dest="noinfo", action="store_true", help="")
 parser.add_argument("-y", "--no-datetime", dest="nodate", action="store_true", help="don't add date time prefix to completed model files")
 parser.add_argument("-f", "--force", action="store_true", help="allow overwrite existing files")
 parser.add_argument("-w", "--wipe", action="store_true", help="")
@@ -34,6 +34,7 @@ parser.add_argument("-b", "--batch", type=int, default=4, help="batch size, affe
 parser.add_argument("-e", "--epoch", type=int, default=1, help="")
 parser.add_argument("-a", "--alpha", type=float, default=0.0, help="")
 parser.add_argument("-t", "--delta", type=float, default=2**-8, help="")
+parser.add_argument("-i", "--style-mixing", dest="mix", type=float, default=0.9, help="")
 parser.add_argument("-l", "--interval", metavar="ITER", type=int, default=5, help="")
 parser.add_argument("-v", "--device", type=int, default=-1, help="use specified GPU or CPU device")
 args = parser.parse_args()
@@ -104,7 +105,7 @@ global_config.autotune = True
 global_config.cudnn_deterministic = False
 
 # Prepare updater
-updater = StyleGanUpdater(generator, discriminator, iterator, {"mapper": mapper_optimizer, "generator": generator_optimizer, "discriminator": discriminator_optimizer}, device, args.stage, alpha, delta)
+updater = StyleGanUpdater(generator, discriminator, iterator, {"mapper": mapper_optimizer, "generator": generator_optimizer, "discriminator": discriminator_optimizer}, device, stage, args.mix, alpha, delta)
 
 # Init result directory
 if args.wipe:
