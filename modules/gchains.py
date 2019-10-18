@@ -48,8 +48,8 @@ class StyleAffineTransform(Chain):
 	def __init__(self, in_size, out_size):
 		super().__init__()
 		with self.init_scope():
-			self.s = EqualizedLinear(in_size, out_size, initial_bias=One())
-			self.b = EqualizedLinear(in_size, out_size, initial_bias=Zero())
+			self.s = EqualizedLinear(in_size, out_size, initial_bias=One(), gain=1)
+			self.b = EqualizedLinear(in_size, out_size, initial_bias=Zero(), gain=1)
 
 	def __call__(self, w):
 		return self.s(w), self.b(w)
@@ -83,7 +83,7 @@ class InitialSynthesisNetwork(Chain):
 			self.a2 = StyleAffineTransform(w_size, out_channels)
 			self.i2 = AdaptiveInstanceNormalization()
 			self.us = Upsampler()
-			self.rgb = EqualizedConvolution2D(out_channels, 3, ksize=1, stride=1, pad=0)
+			self.rgb = EqualizedConvolution2D(out_channels, 3, ksize=1, stride=1, pad=0, gain=1)
 
 	def __call__(self, w, last=False, upsample=False):
 		h1 = self.p1(w.shape[0])
@@ -119,7 +119,7 @@ class SynthesisNetwork(Chain):
 			self.i2 = AdaptiveInstanceNormalization()
 			self.us = Upsampler()
 			self.lb = LerpBlendLink()
-			self.rgb = EqualizedConvolution2D(out_channels, 3, ksize=1, stride=1, pad=0)
+			self.rgb = EqualizedConvolution2D(out_channels, 3, ksize=1, stride=1, pad=0, gain=1)
 
 	def __call__(self, x, w, last=False, upsample=False, alpha=1.0, blend=None):
 		h1 = self.c1(x)
