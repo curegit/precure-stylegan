@@ -57,6 +57,7 @@ generator = Generator(size, depth, channels, args.maxstage)
 discriminator = Discriminator(channels, args.maxstage)
 
 # Prepare dataset
+print("Loading dataset" if args.preload else "Scanning dataset")
 h, w = generator.resolution(stage)
 dataset = StyleGanDataset(args.dataset, (w, h), args.preload)
 iterator = MultiprocessIterator(dataset, batch_size=batch, repeat=True, shuffle=True, n_prefetch=4)
