@@ -1,3 +1,4 @@
+# TODO: use chainerX
 import numpy as np
 from random import randint
 from chainer import Chain, Sequential
@@ -82,6 +83,7 @@ class Generator(Chain):
 		return self.generator(self.mapper(z), stage, alpha, None if mix_z is None else self.mapper(mix_z), mix_stage)
 
 	def generate_latent(self, batch):
+		# TODO: use chainerX
 		return self.xp.random.normal(size=(batch, self.z_size)).astype(self.xp.float32) if self.xp == np else self.xp.random.normal(size=(batch, self.z_size), dtype=self.xp.float32)
 
 	def resolution(self, stage):

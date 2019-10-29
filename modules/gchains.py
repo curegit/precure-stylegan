@@ -1,3 +1,4 @@
+# TODO: use chainerX
 import numpy as np
 from chainer import Chain, Parameter, Variable
 from chainer.links import Scale
@@ -39,6 +40,7 @@ class NoiseAdder(Chain):
 		return x + self.s(n)
 
 	def generate_noises(self, batch, channels, height, width):
+		# TODO: use chainerX
 		n = self.xp.random.normal(size=(batch, 1, height, width)).astype(self.xp.float32) if self.xp == np else self.xp.random.normal(size=(batch, 1, height, width), dtype=self.xp.float32)
 		return broadcast_to(Variable(n), (batch, channels, height, width))
 

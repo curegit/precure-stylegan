@@ -19,11 +19,13 @@ class StyleGanUpdater(StandardUpdater):
 		self.mapper_optimizer = optimizer["mapper"]
 		self.generator_optimizer = optimizer["generator"]
 		self.discriminator_optimizer = optimizer["discriminator"]
+		# TODO: use chainerX
 		self.xp = self.generator.xp
 
 	def update_core(self):
 		batch = self.get_iterator("main").next()
 		batchsize = len(batch)
+		# TODO: use chainerX
 		x_real = Variable(self.xp.array(batch))
 
 		# Train discriminator
