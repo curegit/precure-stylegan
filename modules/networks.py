@@ -79,8 +79,13 @@ class Generator(Chain):
 			self.mapper = FeatureMapper(z_size, depth)
 			self.generator = ImageGenerator(z_size, *channels, max_stage)
 
-	def __call__(self, z, stage, alpha=1.0, mix_z=None, mix_stage=None):
-		return self.generator(self.mapper(z), stage, alpha, None if mix_z is None else self.mapper(mix_z), mix_stage)
+	def __call__(self, z, stage, alpha=1.0, mix_z=None, mix_stage=None, psi=None):
+		if psi is None:
+			return self.generator(self.mapper(z), stage, alpha, None if mix_z is None else self.mapper(mix_z), mix_stage)
+		else:
+			# TODO: num of avg samples
+			w_mean = mean(self.mapper(self.generate_latent(20000)), axis=0)
+			return self.generator(w_mean + psi * (self.mapper(z) - w_mean), stage, alpha, None if mix_z is None else self.mapper(mix_z), mix_stage)
 
 	def generate_latent(self, batch):
 		# TODO: use chainerX

@@ -17,12 +17,15 @@ parser.add_argument("-z", "--z-size", dest="size", type=int, default=512, help="
 parser.add_argument("-m", "--mlp-depth", metavar="DEPTH", dest="mlp", type=int, default=8, help="MLP depth of mapping network")
 parser.add_argument("-n", "--number", type=int, default=1, help="the number of images to generate")
 parser.add_argument("-b", "--batch", type=int, default=1, help="batch size, affecting memory usage")
-parser.add_argument("-v", "--device", type=int, default=-1, help="use specified GPU or CPU device")
+parser.add_argument("-a", "--alpha", type=float, default=0.0, help="")
+parser.add_argument("-t", "--truncation-trick", "--psi", metavar="PSI", dest="psi", type=float, help="")
+parser.add_argument("-v", "--device", "--gpu", metavar="ID", dest="device", type=int, default=-1, help="use specified GPU or CPU device")
 args = parser.parse_args()
 
 # Validate arguments
 number = max(0, args.number)
 batch = max(1, args.batch)
+alpha = max(0.0, min(1.0, args.alpha))
 stage = min(args.stage, args.maxstage)
 channels = (max(1, args.channels[0]), max(1, args.channels[1]))
 size = max(1, args.size)
@@ -59,7 +62,7 @@ c = 0
 while c < number:
 	n = min(number - c, batch)
 	z = generator.generate_latent(n)
-	y = generator(z, stage)
+	y = generator(z, stage, alpha=alpha, psi=args.psi)
 	y.to_cpu()
 	for i in range(n):
 		path = filepath(args.directory, f"{prefix}{c + i + 1}", "png")
