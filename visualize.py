@@ -15,6 +15,7 @@ depth = 6
 batch = 2
 alpha = 0.5
 mix_stage = 2
+psi = 0.7
 
 # Graph style config
 gvarstyle = {"fillcolor": "#5edbf1", "shape": "record", "style": "filled"}
@@ -35,7 +36,7 @@ mkdirp(path)
 gen = Generator(z_size, depth, channels, max_stage)
 z = gen.generate_latent(batch)
 mix = gen.generate_latent(batch)
-i = gen(Variable(z), stage, alpha, Variable(mix), mix_stage)
+i = gen(Variable(z), stage, alpha, Variable(mix), mix_stage, psi)
 dg = build_computational_graph([i], variable_style=gvarstyle, function_style=gfuncstyle).dump()
 
 # Make Discriminator graph
