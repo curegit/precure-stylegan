@@ -13,14 +13,14 @@ from modules.utilities import mkdirp, filepath, altfilepath, save_image
 # Parse command line arguments
 parser = ArgumentParser(allow_abbrev=False, description="Style-Based GAN's Trainer")
 parser.add_argument("dataset", metavar="DATASET_DIR", help="dataset directory which stores images")
+parser.add_argument("-q", "--quit", action="store_true", help="")
 parser.add_argument("-p", "--preload", action="store_true", help="preload all dataset into RAM")
 parser.add_argument("-k", "--current", action="store_true", help="save completed models in current directory")
-parser.add_argument("-u", "--no-autosave", dest="nosave", action="store_true", help="don't save middle model snapshots")
 parser.add_argument("-j", "--no-netinfo", dest="noinfo", action="store_true", help="")
 parser.add_argument("-y", "--no-datetime", dest="nodate", action="store_true", help="don't add date time prefix to completed model files")
 parser.add_argument("-f", "--force", action="store_true", help="allow overwrite existing files")
 parser.add_argument("-w", "--wipe", action="store_true", help="")
-parser.add_argument("-r", "--result", "--directory", metavar="DIR", dest="result", default="results", help="destination directory for models, logs, middle images, and so on")
+parser.add_argument("-r", "--result", "--directory", metavar="DEST", dest="result", default="results", help="destination directory for models, logs, middle images, and so on")
 parser.add_argument("-g", "--generator", metavar="FILE", help="HDF5 file of serialized trained generator to load and retrain")
 parser.add_argument("-d", "--discriminator", metavar="FILE", help="HDF5 file of serialized trained discriminator to load and retrain")
 parser.add_argument("-o", "--optimizers", metavar="FILE", nargs=3, help="snapshot of optimizers of mapper, generator, and discriminator")
@@ -35,8 +35,8 @@ parser.add_argument("-e", "--epoch", type=int, default=1, help="")
 parser.add_argument("-a", "--alpha", type=float, default=0.0, help="")
 parser.add_argument("-t", "--delta", type=float, default=0.00005, help="")
 parser.add_argument("-i", "--style-mixing", metavar="RATE", dest="mix", type=float, default=0.5, help="")
-parser.add_argument("-l", "--print-interval", metavar="ITER", dest="print", type=int, nargs=2, default=(5, 500), help="")
-parser.add_argument("-q", "--write-interval", metavar="ITER", dest="write", type=int, nargs=4, default=(1000, 3000, 1000, 500), help="")
+parser.add_argument("-u", "--print-interval", metavar="ITER", dest="print", type=int, nargs=2, default=(5, 500), help="")
+parser.add_argument("-l", "--write-interval", metavar="ITER", dest="write", type=int, nargs=4, default=(1000, 3000, 1000, 500), help="")
 parser.add_argument("-v", "--device", "--gpu", metavar="ID", dest="device", type=int, default=-1, help="use specified GPU or CPU device")
 args = parser.parse_args()
 
@@ -68,10 +68,10 @@ if n < 1:
 	exit(1)
 
 # Print information
-print(f"Epoch: {epoch}, Batch: {batch}, Images: {n}")
 print(f"MLP: {size}x{depth}, Stage: {stage}/{args.maxstage} ({w}x{h})")
 print(f"Channel: {channels[0]} (initial) -> {channels[1]} (final)")
-print(f"Mixing rate: {args.mix * 100:.1f}%, Initial alpha: {alpha:.3f}, Delta per iter: {delta}")
+print(f"Epoch: {epoch}, Batch: {batch}, Dataset Images: {n}")
+print(f"Mixing Rate: {args.mix * 100:.1f}%, Initial Alpha: {alpha:.3f}, Delta: {delta} (/iter)")
 print(f"Device: {'CPU' if device < 0 else f'GPU {device}'}")
 
 # Load models
@@ -111,6 +111,7 @@ global_config.cudnn_deterministic = False
 updater = StyleGanUpdater(generator, discriminator, iterator, {"mapper": mapper_optimizer, "generator": generator_optimizer, "discriminator": discriminator_optimizer}, device, stage, args.mix, alpha, delta)
 
 # Init result directory
+print("Initializing destination directory")
 if args.wipe:
 	rmtree(args.result, ignore_errors=True)
 mkdirp(args.result)
@@ -172,14 +173,22 @@ plotname = basename(plotpath if args.force else altfilepath(plotpath))
 trainer = Trainer(updater, (epoch, "epoch"), out=args.result)
 if args.print[0] > 0: trainer.extend(extensions.ProgressBar(update_interval=args.print[0]))
 if args.print[1] > 0: trainer.extend(extensions.PrintReport(["iteration", "alpha", "loss (gen)", "loss (dis)"], extensions.LogReport(trigger=(args.print[1], "iteration"))))
-trainer.extend(extensions.LogReport(trigger=(args.write[2], "iteration")))
-#trainer.extend(extensions.LogReport(trigger=(args.write[2], "iteration"), filename=logname))
-trainer.extend(extensions.PlotReport(["alpha", "loss (gen)", "loss (dis)"], "iteration", trigger=(args.write[3], "iteration")))
-#trainer.extend(extensions.PlotReport(["alpha", "loss (gen)", "loss (dis)"], "iteration", trigger=(args.write[3], "iteration"), filename=plotname))
-trainer.extend(save_middle_images(generator, stage, args.result, number, batch, args.force), trigger=(args.write[0], "iteration"))
-if not args.nosave:
-	trainer.extend(save_middle_models(generator, discriminator, stage, args.result, device, args.force), trigger=(args.write[1], "iteration"))
-	trainer.extend(save_middle_optimizers(mapper_optimizer, generator_optimizer, discriminator_optimizer, stage, args.result, args.force), trigger=(args.write[1], "iteration"))
+if args.write[0] > 0: trainer.extend(save_middle_images(generator, stage, args.result, number, batch, args.force), trigger=(args.write[0], "iteration"))
+if args.write[1] > 0: trainer.extend(save_middle_models(generator, discriminator, stage, args.result, device, args.force), trigger=(args.write[1], "iteration"))
+if args.write[1] > 0: trainer.extend(save_middle_optimizers(mapper_optimizer, generator_optimizer, discriminator_optimizer, stage, args.result, args.force), trigger=(args.write[1], "iteration"))
+if args.write[2] > 0:
+	trainer.extend(extensions.LogReport(trigger=(args.write[2], "iteration")))
+	# TODO: Chainer 6
+	#trainer.extend(extensions.LogReport(trigger=(args.write[2], "iteration"), filename=logname))
+if args.write[3] > 0:
+	trainer.extend(extensions.PlotReport(["alpha", "loss (gen)", "loss (dis)"], "iteration", trigger=(args.write[3], "iteration")))
+	# TODO: Chainer 6
+	#trainer.extend(extensions.PlotReport(["alpha", "loss (gen)", "loss (dis)"], "iteration", trigger=(args.write[3], "iteration"), filename=plotname))
+
+# Quit mode
+if args.quit:
+	print("Finished (Quit mode)")
+	exit(0)
 
 # Run ML
 trainer.run()
