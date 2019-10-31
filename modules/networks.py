@@ -83,7 +83,6 @@ class Generator(Chain):
 		if psi is None:
 			return self.generator(self.mapper(z), stage, alpha, None if mix_z is None else self.mapper(mix_z), mix_stage)
 		else:
-			# TODO: num of avg samples
 			w_mean = mean(self.mapper(self.generate_latent(n)), axis=0)
 			return self.generator(w_mean + psi * (self.mapper(z) - w_mean), stage, alpha, None if mix_z is None else w_mean + psi * (self.mapper(mix_z) - w_mean), mix_stage)
 
