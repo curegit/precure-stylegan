@@ -31,7 +31,7 @@ class DiscriminatorChain(Chain):
 	def __init__(self, in_channels, out_channels):
 		super().__init__()
 		with self.init_scope():
-			self.rgb = Sequential(EqualizedConvolution2D(3, in_channels, ksize=1, stride=1, pad=0), LeakyReluLink(0.2))
+			self.rgb = Sequential(EqualizedConvolution2D(3, in_channels, ksize=1, stride=1, pad=0, gain=1), LeakyReluLink(0.2))
 			self.c1 = EqualizedConvolution2D(in_channels, in_channels, ksize=3, stride=1, pad=1)
 			self.r1 = LeakyReluLink(0.2)
 			self.c2 = EqualizedConvolution2D(in_channels, out_channels, ksize=3, stride=1, pad=1)
@@ -55,13 +55,13 @@ class FinalDiscriminatorChain(Chain):
 		super().__init__()
 		with self.init_scope():
 			self.lb = LerpBlendLink()
-			self.rgb = Sequential(EqualizedConvolution2D(3, in_channels, ksize=1, stride=1, pad=0), LeakyReluLink(0.2))
+			self.rgb = Sequential(EqualizedConvolution2D(3, in_channels, ksize=1, stride=1, pad=0, gain=1), LeakyReluLink(0.2))
 			self.mb = MiniBatchStandardDeviation()
 			self.c1 = EqualizedConvolution2D(in_channels + 1, in_channels, ksize=3, stride=1, pad=1)
 			self.r1 = LeakyReluLink(0.2)
 			self.c2 = EqualizedConvolution2D(in_channels, in_channels, ksize=4, stride=1, pad=0)
 			self.r2 = LeakyReluLink(0.2)
-			self.fc = EqualizedLinear(in_channels, 1)
+			self.fc = EqualizedLinear(in_channels, 1, gain=1)
 
 	def __call__(self, x, first=False, alpha=1.0, blend=None):
 		h1 = self.rgb(x) if first else x
