@@ -1,4 +1,5 @@
 from os.path import basename
+from shutil import rmtree
 from argparse import ArgumentParser
 from chainer import serializers
 from modules.networks import Generator
@@ -6,8 +7,10 @@ from modules.utilities import mkdirp, filepath, altfilepath, save_image
 
 # Parse command line arguments
 parser = ArgumentParser(allow_abbrev=False, description="Style-Based GAN's Generator")
+parser.add_argument("-q", "--quit", action="store_true", help="")
 parser.add_argument("-f", "--force", action="store_true", help="allow overwrite existing files")
-parser.add_argument("-r", "--result", "-d", "--directory", metavar="DEST", dest="directory", default=".", help="destination directory for generated images")
+parser.add_argument("-w", "--wipe", action="store_true", help="")
+parser.add_argument("-r", "--result", "-d", "--directory", metavar="DEST", dest="directory", default="images", help="destination directory for generated images")
 parser.add_argument("-p", "--prefix", help="filename prefix for generated images")
 parser.add_argument("-g", "--generator", metavar="FILE", help="HDF5 file of serialized trained model to load")
 parser.add_argument("-s", "--stage", type=int, choices=[1, 2, 3, 4, 5, 6, 7, 8, 9], default=7, help="growth stage, defining image resolution")
@@ -39,12 +42,15 @@ generator = Generator(size, depth, channels, args.maxstage)
 
 # Print information
 h, w = generator.resolution(stage)
-print(f"Total: {number}, Batch: {batch}")
+print(f"Total Generation: {number}, Batch: {batch}")
 print(f"MLP: {size}x{depth}, Stage: {stage}/{args.maxstage} ({w}x{h})")
 print(f"Channel: {channels[0]} (initial) -> {channels[1]} (final)")
 print(f"Device: {'CPU' if device < 0 else f'GPU {device}'}")
 
-# Make destination folder
+# Init destination folder
+print("Initializing destination directory")
+if args.wipe:
+	rmtree(args.directory, ignore_errors=True)
 mkdirp(args.directory)
 
 # Load model
@@ -56,6 +62,11 @@ if args.generator is not None:
 if device >= 0:
 	print("Converting to GPU")
 	generator.to_gpu(device)
+
+# Quit mode
+if args.quit:
+	print("Finished (Quit mode)")
+	exit(0)
 
 # Generate images
 c = 0
