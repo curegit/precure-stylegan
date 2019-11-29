@@ -41,38 +41,38 @@ parser.add_argument("-v", "--device", "--gpu", metavar="ID", dest="device", type
 args = parser.parse_args()
 
 # Validate arguments
-number = max(0, args.number)
-batch = max(1, args.batch)
-epoch = max(1, args.epoch)
-alpha = max(0.0, min(1.0, args.alpha))
-delta = max(0.0, args.delta)
-stage = min(args.stage, args.maxstage)
-channels = (max(1, args.channels[0]), max(1, args.channels[1]))
-size = max(1, args.size)
-depth = max(1, args.mlp)
-device = max(-1, args.device)
+args.number = max(0, args.number)
+args.batch = max(1, args.batch)
+args.epoch = max(1, args.epoch)
+args.alpha = max(0.0, min(1.0, args.alpha))
+args.delta = max(0.0, args.delta)
+args.stage = min(args.stage, args.maxstage)
+args.channels = (max(1, args.channels[0]), max(1, args.channels[1]))
+args.size = max(1, args.size)
+args.depth = max(1, args.mlp)
+args.device = max(-1, args.device)
 
 # Init models
 print("Initializing models")
-generator = Generator(size, depth, channels, args.maxstage)
-discriminator = Discriminator(channels, args.maxstage)
+generator = Generator(args.size, args.depth, args.channels, args.maxstage)
+discriminator = Discriminator(args.channels, args.maxstage)
 
 # Prepare dataset
 print("Loading dataset" if args.preload else "Scanning dataset")
-h, w = generator.resolution(stage)
+h, w = generator.resolution(args.stage)
 dataset = StyleGanDataset(args.dataset, (w, h), args.preload)
-iterator = MultiprocessIterator(dataset, batch_size=batch, repeat=True, shuffle=True, n_prefetch=4)
+iterator = MultiprocessIterator(dataset, batch_size=args.batch, repeat=True, shuffle=True, n_prefetch=4)
 n = dataset.length()
 if n < 1:
 	print("No image found in dataset directory")
 	exit(1)
 
 # Print information
-print(f"MLP: {size}x{depth}, Stage: {stage}/{args.maxstage} ({w}x{h})")
-print(f"Channel: {channels[0]} (initial) -> {channels[1]} (final)")
-print(f"Epoch: {epoch}, Batch: {batch}, Dataset Images: {n}")
-print(f"Mixing Rate: {args.mix * 100:.1f}%, Initial Alpha: {alpha:.3f}, Delta: {delta} (/iter)")
-print(f"Device: {'CPU' if device < 0 else f'GPU {device}'}")
+print(f"MLP: {args.size}x{args.depth}, Stage: {args.stage}/{args.maxstage} ({w}x{h})")
+print(f"Channel: {args.channels[0]} (initial) -> {args.channels[1]} (final)")
+print(f"Epoch: {args.epoch}, Batch: {args.batch}, Dataset Images: {n}")
+print(f"Mixing Rate: {args.mix * 100:.1f}%, Initial Alpha: {args.alpha:.3f}, Delta: {args.delta} (/iter)")
+print(f"Device: {'CPU' if args.device < 0 else f'GPU {args.device}'}")
 
 # Load models
 if args.generator is not None:
@@ -83,10 +83,10 @@ if args.discriminator is not None:
 	serializers.load_hdf5(args.discriminator, discriminator)
 
 # GPU setting
-if device >= 0:
+if args.device >= 0:
 	print("Converting to GPU")
-	generator.to_gpu(device)
-	discriminator.to_gpu(device)
+	generator.to_gpu(args.device)
+	discriminator.to_gpu(args.device)
 
 # Init optimizers
 print("Initializing optimizers")
@@ -108,7 +108,7 @@ global_config.autotune = True
 global_config.cudnn_deterministic = False
 
 # Prepare updater
-updater = StyleGanUpdater(generator, discriminator, iterator, {"mapper": mapper_optimizer, "generator": generator_optimizer, "discriminator": discriminator_optimizer}, device, stage, args.mix, alpha, delta)
+updater = StyleGanUpdater(generator, discriminator, iterator, {"mapper": mapper_optimizer, "generator": generator_optimizer, "discriminator": discriminator_optimizer}, args.device, args.stage, args.mix, args.alpha, args.delta)
 
 # Init result directory
 print("Initializing destination directory")
@@ -170,12 +170,12 @@ logpath = filepath(args.result, "report", "log")
 logname = basename(logpath if args.force else altfilepath(logpath))
 plotpath = filepath(args.result, "report", "png")
 plotname = basename(plotpath if args.force else altfilepath(plotpath))
-trainer = Trainer(updater, (epoch, "epoch"), out=args.result)
+trainer = Trainer(updater, (args.epoch, "epoch"), out=args.result)
 if args.print[0] > 0: trainer.extend(extensions.ProgressBar(update_interval=args.print[0]))
 if args.print[1] > 0: trainer.extend(extensions.PrintReport(["iteration", "alpha", "loss (gen)", "loss (dis)"], extensions.LogReport(trigger=(args.print[1], "iteration"))))
-if args.write[0] > 0: trainer.extend(save_middle_images(generator, stage, args.result, number, batch, args.force), trigger=(args.write[0], "iteration"))
-if args.write[1] > 0: trainer.extend(save_middle_models(generator, discriminator, stage, args.result, device, args.force), trigger=(args.write[1], "iteration"))
-if args.write[1] > 0: trainer.extend(save_middle_optimizers(mapper_optimizer, generator_optimizer, discriminator_optimizer, stage, args.result, args.force), trigger=(args.write[1], "iteration"))
+if args.write[0] > 0: trainer.extend(save_middle_images(generator, args.stage, args.result, args.number, args.batch, args.force), trigger=(args.write[0], "iteration"))
+if args.write[1] > 0: trainer.extend(save_middle_models(generator, discriminator, args.stage, args.result, args.device, args.force), trigger=(args.write[1], "iteration"))
+if args.write[1] > 0: trainer.extend(save_middle_optimizers(mapper_optimizer, generator_optimizer, discriminator_optimizer, args.stage, args.result, args.force), trigger=(args.write[1], "iteration"))
 if args.write[2] > 0:
 	trainer.extend(extensions.LogReport(trigger=(args.write[2], "iteration")))
 	# TODO: Chainer 6
@@ -197,7 +197,7 @@ trainer.run()
 print("Saving models")
 generator.to_cpu()
 discriminator.to_cpu()
-n = f"s{stage}x{args.maxstage}c{channels[0]}-{channels[1]}z{size}m{depth}"
+n = f"s{args.stage}x{args.maxstage}c{args.channels[0]}-{args.channels[1]}z{args.size}m{args.depth}"
 t = datetime.now().strftime("%m%d%H")
 gname = f"gen{'' if args.noinfo else f'_{n}'}{'' if args.nodate else f'_{t}'}"
 dname = f"dis{'' if args.noinfo else f'_{n}'}{'' if args.nodate else f'_{t}'}"
