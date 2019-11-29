@@ -79,5 +79,11 @@ while c < args.number:
 		path = filepath(args.directory, f"{args.prefix}{c + i + 1}", "png")
 		path = path if args.force else altfilepath(path)
 		save_image(y.array[i], path)
+		""" TODO: chainerX
+		if save_vec:
+			path = filepath(args.directory, f"{args.prefix}{c + i + 1}", "npy")
+			path = path if args.force else altfilepath(path)
+			save_vector(z.array[i], path)
+		"""
 		print(f"{c + i + 1}/{args.number}: Saved as {basename(path)}")
 	c += n
