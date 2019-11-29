@@ -26,26 +26,26 @@ parser.add_argument("-v", "--device", "--gpu", metavar="ID", dest="device", type
 args = parser.parse_args()
 
 # Validate arguments
-number = max(0, args.number)
-batch = max(1, args.batch)
-alpha = max(0.0, min(1.0, args.alpha))
-stage = min(args.stage, args.maxstage)
-channels = (max(1, args.channels[0]), max(1, args.channels[1]))
-size = max(1, args.size)
-depth = max(1, args.mlp)
-device = max(-1, args.device)
-prefix = basename(args.prefix or "")
+args.number = max(0, args.number)
+args.batch = max(1, args.batch)
+args.alpha = max(0.0, min(1.0, args.alpha))
+args.stage = min(args.stage, args.maxstage)
+args.channels = (max(1, args.channels[0]), max(1, args.channels[1]))
+args.size = max(1, args.size)
+args.depth = max(1, args.mlp)
+args.device = max(-1, args.device)
+args.prefix = basename(args.prefix or "")
 
 # Init model
 print("Initializing model")
-generator = Generator(size, depth, channels, args.maxstage)
+generator = Generator(args.size, args.depth, args.channels, args.maxstage)
 
 # Print information
-h, w = generator.resolution(stage)
-print(f"Total Generation: {number}, Batch: {batch}")
-print(f"MLP: {size}x{depth}, Stage: {stage}/{args.maxstage} ({w}x{h})")
-print(f"Channel: {channels[0]} (initial) -> {channels[1]} (final)")
-print(f"Device: {'CPU' if device < 0 else f'GPU {device}'}")
+h, w = generator.resolution(args.stage)
+print(f"Total Generation: {args.number}, Batch: {args.batch}")
+print(f"MLP: {args.size}x{args.depth}, Stage: {args.stage}/{args.maxstage} ({w}x{h})")
+print(f"Channel: {args.channels[0]} (initial) -> {args.channels[1]} (final)")
+print(f"Device: {'CPU' if args.device < 0 else f'GPU {args.device}'}")
 
 # Init destination folder
 print("Initializing destination directory")
@@ -59,9 +59,9 @@ if args.generator is not None:
 	serializers.load_hdf5(args.generator, generator)
 
 # GPU setting
-if device >= 0:
+if args.device >= 0:
 	print("Converting to GPU")
-	generator.to_gpu(device)
+	generator.to_gpu(args.device)
 
 # Quit mode
 if args.quit:
@@ -70,14 +70,14 @@ if args.quit:
 
 # Generate images
 c = 0
-while c < number:
-	n = min(number - c, batch)
+while c < args.number:
+	n = min(args.number - c, args.batch)
 	z = generator.generate_latent(n)
-	y = generator(z, stage, alpha=alpha, psi=args.psi)
+	y = generator(z, args.stage, alpha=args.alpha, psi=args.psi)
 	y.to_cpu()
 	for i in range(n):
-		path = filepath(args.directory, f"{prefix}{c + i + 1}", "png")
+		path = filepath(args.directory, f"{args.prefix}{c + i + 1}", "png")
 		path = path if args.force else altfilepath(path)
 		save_image(y.array[i], path)
-		print(f"{c + i + 1}/{number}: Saved as {basename(path)}")
+		print(f"{c + i + 1}/{args.number}: Saved as {basename(path)}")
 	c += n
