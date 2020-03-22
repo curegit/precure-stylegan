@@ -1,7 +1,7 @@
 from os.path import basename
 from shutil import rmtree
 from argparse import ArgumentParser
-from chainer import serializers
+from chainer import serializers, global_config
 from modules.networks import Generator
 from modules.utilities import mkdirp, filepath, altfilepath, save_image
 
@@ -62,6 +62,11 @@ if args.generator is not None:
 if args.device >= 0:
 	print("Converting to GPU")
 	generator.to_gpu(args.device)
+
+# Config chainer
+global_config.train = False
+global_config.autotune = True
+global_config.cudnn_deterministic = True
 
 # Quit mode
 if args.quit:
