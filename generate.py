@@ -18,7 +18,7 @@ parser.add_argument("-s", "--stage", type=int, choices=[1, 2, 3, 4, 5, 6, 7, 8, 
 parser.add_argument("-x", "--max-stage", dest="maxstage", type=int, choices=[1, 2, 3, 4, 5, 6, 7, 8, 9], default=7, help="final stage")
 parser.add_argument("-c", "--channels", metavar="CH", type=natural, nargs=2, default=(512, 16), help="numbers of channels at initial stage and final stage")
 parser.add_argument("-z", "--z-size", dest="size", type=natural, default=512, help="latent vector (feature vector) size")
-parser.add_argument("-m", "--mlp-depth", metavar="DEPTH", dest="mlp", type=natural, default=8, help="MLP depth of mapping network")
+parser.add_argument("-m", "--mlp-depth", metavar="DEPTH", dest="depth", type=natural, default=8, help="MLP depth of mapping network")
 parser.add_argument("-n", "--number", type=uint, default=1, help="the number of images to generate")
 parser.add_argument("-b", "--batch", type=natural, default=1, help="batch size, affecting memory usage")
 parser.add_argument("-a", "--alpha", type=rate, default=1.0, help="")
