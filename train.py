@@ -8,6 +8,7 @@ from chainer.training import Trainer, extensions, make_extension
 from modules.updater import StyleGanUpdater
 from modules.dataset import StyleGanDataset
 from modules.networks import Generator, Discriminator
+from modules.argtypes import uint, natural, positive, rate, device
 from modules.utilities import mkdirp, filepath, altfilepath, save_image
 
 # Parse command line arguments
@@ -26,31 +27,19 @@ parser.add_argument("-d", "--discriminator", metavar="FILE", help="HDF5 file of 
 parser.add_argument("-o", "--optimizers", metavar="FILE", nargs=3, help="snapshot of optimizers of mapper, generator, and discriminator")
 parser.add_argument("-s", "--stage", type=int, choices=[1, 2, 3, 4, 5, 6, 7, 8, 9], default=1, help="growth stage to train")
 parser.add_argument("-x", "--max-stage", dest="maxstage", type=int, choices=[1, 2, 3, 4, 5, 6, 7, 8, 9], default=7, help="")
-parser.add_argument("-c", "--channels", metavar="CH", type=int, nargs=2, default=(512, 16), help="")
-parser.add_argument("-z", "--z-size", dest="size", type=int, default=512, help="latent vector (feature vector) size")
-parser.add_argument("-m", "--mlp-depth", dest="mlp", type=int, default=8, help="MLP depth of mapping network")
-parser.add_argument("-n", "--number", type=int, default=10, help="the number of middle images to generate")
-parser.add_argument("-b", "--batch", type=int, default=4, help="batch size, affecting memory usage")
-parser.add_argument("-e", "--epoch", type=int, default=1, help="")
-parser.add_argument("-a", "--alpha", type=float, default=0.0, help="")
-parser.add_argument("-t", "--delta", type=float, default=0.00005, help="")
-parser.add_argument("-i", "--style-mixing", metavar="RATE", dest="mix", type=float, default=0.5, help="")
-parser.add_argument("-u", "--print-interval", metavar="ITER", dest="print", type=int, nargs=2, default=(5, 500), help="")
-parser.add_argument("-l", "--write-interval", metavar="ITER", dest="write", type=int, nargs=4, default=(1000, 3000, 1000, 500), help="")
-parser.add_argument("-v", "--device", "--gpu", metavar="ID", dest="device", type=int, default=-1, help="use specified GPU or CPU device")
+parser.add_argument("-c", "--channels", metavar="CH", type=natural, nargs=2, default=(512, 16), help="")
+parser.add_argument("-z", "--z-size", dest="size", type=natural, default=512, help="latent vector (feature vector) size")
+parser.add_argument("-m", "--mlp-depth", dest="mlp", type=natural, default=8, help="MLP depth of mapping network")
+parser.add_argument("-n", "--number", type=uint, default=10, help="the number of middle images to generate")
+parser.add_argument("-b", "--batch", type=natural, default=4, help="batch size, affecting memory usage")
+parser.add_argument("-e", "--epoch", type=natural, default=1, help="")
+parser.add_argument("-a", "--alpha", type=rate, default=0.0, help="")
+parser.add_argument("-t", "--delta", type=positive, default=0.00005, help="")
+parser.add_argument("-i", "--style-mixing", metavar="RATE", dest="mix", type=rate, default=0.5, help="")
+parser.add_argument("-u", "--print-interval", metavar="ITER", dest="print", type=uint, nargs=2, default=(5, 500), help="")
+parser.add_argument("-l", "--write-interval", metavar="ITER", dest="write", type=uint, nargs=4, default=(1000, 3000, 1000, 500), help="")
+parser.add_argument("-v", "--device", "--gpu", metavar="ID", dest="device", type=device, default=-1, help="use specified GPU or CPU device")
 args = parser.parse_args()
-
-# Validate arguments
-args.number = max(0, args.number)
-args.batch = max(1, args.batch)
-args.epoch = max(1, args.epoch)
-args.alpha = max(0.0, min(1.0, args.alpha))
-args.delta = max(0.0, args.delta)
-args.stage = min(args.stage, args.maxstage)
-args.channels = (max(1, args.channels[0]), max(1, args.channels[1]))
-args.size = max(1, args.size)
-args.depth = max(1, args.mlp)
-args.device = max(-1, args.device)
 
 # Init models
 print("Initializing models")
