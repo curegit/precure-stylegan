@@ -23,7 +23,7 @@ class Downsampler(Chain):
 
 	def __call__(self, x):
 		height, width = x.shape[2:]
-		return resize_images(x, (height // 2, width // 2))
+		return resize_images(x, (height // 2, width // 2), align_corners=False)
 
 # Head blocks of discriminator
 class DiscriminatorChain(Chain):
