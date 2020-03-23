@@ -65,6 +65,7 @@ while c < args.number:
 	n = min(args.number - c, args.batch)
 	z = generator.generate_latent(n)
 	y = generator(z, args.stage, alpha=args.alpha, psi=args.psi)
+	z.to_cpu()
 	y.to_cpu()
 	for i in range(n):
 		path = filepath(args.directory, f"{args.prefix}{c + i + 1}", "png")
@@ -74,5 +75,5 @@ while c < args.number:
 		if not args.image_only:
 			path = filepath(args.directory, f"{args.prefix}{c + i + 1}", "npy")
 			path = path if args.force else altfilepath(path)
-			save_array(z[i], path)
+			save_array(z.array[i], path)
 	c += n

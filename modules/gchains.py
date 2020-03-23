@@ -1,6 +1,4 @@
-# TODO: use chainerX
-import numpy as np
-from chainer import Chain, Parameter, Variable
+from chainer import Variable, Chain, Parameter
 from chainer.links import Scale
 from chainer.functions import mean, sqrt, broadcast_to, resize_images
 from chainer.initializers import Zero, One
@@ -40,9 +38,8 @@ class NoiseAdder(Chain):
 		return x + self.s(n)
 
 	def generate_noises(self, batch, channels, height, width):
-		# TODO: use chainerX
-		n = self.xp.random.normal(size=(batch, 1, height, width)).astype(self.xp.float32) if self.xp == np else self.xp.random.normal(size=(batch, 1, height, width), dtype=self.xp.float32)
-		return broadcast_to(Variable(n), (batch, channels, height, width))
+		n = Variable(self.xp.random.normal(size=(batch, 1, height, width)).astype(self.xp.float32))
+		return broadcast_to(n, (batch, channels, height, width))
 
 # Learnable transform from W to style
 class StyleAffineTransform(Chain):

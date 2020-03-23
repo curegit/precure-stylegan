@@ -1,7 +1,5 @@
-# TODO: use chainerX
-import numpy as np
 from random import randint
-from chainer import Chain, Sequential
+from chainer import Variable, Chain, Sequential
 from chainer.functions import mean, sqrt
 from modules.links import EqualizedLinear, LeakyReluLink
 from modules.gchains import InitialSynthesisNetwork, SynthesisNetwork
@@ -87,8 +85,7 @@ class Generator(Chain):
 			return self.generator(w_mean + psi * (self.mapper(z) - w_mean), stage, alpha, None if mix_z is None else w_mean + psi * (self.mapper(mix_z) - w_mean), mix_stage)
 
 	def generate_latent(self, batch):
-		# TODO: use chainerX
-		return self.xp.random.normal(size=(batch, self.z_size)).astype(self.xp.float32) if self.xp == np else self.xp.random.normal(size=(batch, self.z_size), dtype=self.xp.float32)
+		return Variable(self.xp.random.normal(size=(batch, self.z_size)).astype(self.xp.float32))
 
 	def resolution(self, stage):
 		return (2 * 2 ** stage, 2 * 2 ** stage)

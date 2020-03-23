@@ -19,14 +19,12 @@ class StyleGanUpdater(StandardUpdater):
 		self.mapper_optimizer = optimizer["mapper"]
 		self.generator_optimizer = optimizer["generator"]
 		self.discriminator_optimizer = optimizer["discriminator"]
-		# TODO: use chainerX
-		self.xp = self.generator.xp
 
 	def update_core(self):
 		batch = self.get_iterator("main").next()
 		batchsize = len(batch)
-		# TODO: use chainerX
-		x_real = Variable(self.xp.array(batch))
+		xp = self.generator.xp
+		x_real = Variable(xp.array(batch))
 
 		# Train discriminator
 		y_real = self.discriminator(x_real, self.stage, self.alpha)
@@ -36,9 +34,9 @@ class StyleGanUpdater(StandardUpdater):
 		z = self.generator.generate_latent(batchsize)
 		if self.mixing > random():
 			mix_z = self.generator.generate_latent(batchsize)
-			x_fake = self.generator(Variable(z), self.stage, self.alpha, Variable(mix_z))
+			x_fake = self.generator(z, self.stage, self.alpha, mix_z)
 		else:
-			x_fake = self.generator(Variable(z), self.stage, self.alpha)
+			x_fake = self.generator(z, self.stage, self.alpha)
 		y_fake = self.discriminator(x_fake, self.stage, self.alpha)
 		loss_dis = sum(softplus(-y_real)) / batchsize
 		loss_dis += sum(softplus(y_fake)) / batchsize
@@ -52,9 +50,9 @@ class StyleGanUpdater(StandardUpdater):
 		z = self.generator.generate_latent(batchsize)
 		if self.mixing > random():
 			mix_z = self.generator.generate_latent(batchsize)
-			x_fake = self.generator(Variable(z), self.stage, self.alpha, Variable(mix_z))
+			x_fake = self.generator(z, self.stage, self.alpha, mix_z)
 		else:
-			x_fake = self.generator(Variable(z), self.stage, self.alpha)
+			x_fake = self.generator(z, self.stage, self.alpha)
 		y_fake = self.discriminator(x_fake, self.stage, self.alpha)
 		loss_gen = sum(softplus(-y_fake)) / batchsize
 		self.generator.cleargrads()

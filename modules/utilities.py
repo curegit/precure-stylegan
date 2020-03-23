@@ -41,7 +41,7 @@ def load_image(path, size=None):
 	if size is not None: img = img.resize(size, Image.LANCZOS)
 	return asarray(img, dtype=uint8).transpose(2, 0, 1).astype(float32) / 255
 
-# Convert 2d numpy array to image
+# Convert 2d numpy array to Pillow image
 def array2image(array):
 	array = clip(rint(array * 255), 0, 255).astype(uint8).transpose(1, 2, 0)
 	return Image.fromarray(array, "RGB")

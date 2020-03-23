@@ -36,7 +36,7 @@ mkdirp(path)
 gen = Generator(z_size, depth, channels, max_stage)
 z = gen.generate_latent(batch)
 mix = gen.generate_latent(batch)
-i = gen(Variable(z), stage, alpha, Variable(mix), mix_stage, psi)
+i = gen(z, stage, alpha, mix, mix_stage, psi)
 dg = build_computational_graph([i], variable_style=gvarstyle, function_style=gfuncstyle).dump()
 
 # Make Discriminator graph
