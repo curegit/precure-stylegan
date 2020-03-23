@@ -93,6 +93,7 @@ if args.optimizers is not None:
 	serializers.load_hdf5(args.optimizers[2], discriminator_optimizer)
 
 # Config chainer
+global_config.train = True
 global_config.autotune = True
 global_config.cudnn_deterministic = False
 
