@@ -2,7 +2,7 @@ import os
 import os.path
 import inspect
 from PIL import Image
-from numpy import asarray, rint, clip, uint8, float32
+from numpy import asarray, rint, clip, uint8, float32, save, load
 
 # Wrapper for doing mkdir -p
 def mkdirp(path):
@@ -26,6 +26,14 @@ def altfilepath(path):
 		head, tail = os.path.split(root)
 		path = os.path.join(head, "_" + tail) + ext
 	return path
+
+# Load numpy array from binary file
+def load_array(path):
+	return load(path)
+
+# Save numpy array in binary file
+def save_array(array, path):
+	save(path, array)
 
 # Load image to return numpy array
 def load_image(path, size=None):

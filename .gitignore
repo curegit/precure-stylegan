@@ -3,6 +3,9 @@
 *.pdf
 *.nvp
 *.hdf5
+*.npy
+*.npz
+*.png
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

@@ -4,13 +4,14 @@ from argparse import ArgumentParser
 from chainer import serializers
 from modules.networks import Generator
 from modules.argtypes import uint, natural, ufloat, rate, filename, device
-from modules.utilities import mkdirp, filepath, altfilepath, save_image
+from modules.utilities import mkdirp, filepath, altfilepath, save_array, save_image
 
 # Parse command line arguments
 parser = ArgumentParser(allow_abbrev=False, description="Style-Based GAN's Generator")
 parser.add_argument("-q", "--quit", action="store_true", help="")
 parser.add_argument("-f", "--force", action="store_true", help="allow overwrite existing files")
 parser.add_argument("-w", "--wipe", action="store_true", help="")
+parser.add_argument("-i", "--image-only", action="store_true", help="")
 parser.add_argument("-r", "--result", "-d", "--directory", metavar="DEST", dest="directory", default="images", help="destination directory for generated images")
 parser.add_argument("-p", "--prefix", type=filename, default="", help="filename prefix for generated images")
 parser.add_argument("-g", "--generator", metavar="FILE", help="HDF5 file of serialized trained model to load")
@@ -69,11 +70,9 @@ while c < args.number:
 		path = filepath(args.directory, f"{args.prefix}{c + i + 1}", "png")
 		path = path if args.force else altfilepath(path)
 		save_image(y.array[i], path)
-		""" TODO: chainerX
-		if save_vec:
+		print(f"{c + i + 1}/{args.number}: Saved as {basename(path)}")
+		if not args.image_only:
 			path = filepath(args.directory, f"{args.prefix}{c + i + 1}", "npy")
 			path = path if args.force else altfilepath(path)
-			save_vector(z.array[i], path)
-		"""
-		print(f"{c + i + 1}/{args.number}: Saved as {basename(path)}")
+			save_array(z[i], path)
 	c += n
