@@ -4,7 +4,7 @@ from chainer.reporter import report
 from chainer.training import StandardUpdater
 from chainer.functions import sum, batch_l2_norm_squared, softplus
 
-# Updater for Style GAN
+# Updater for StyleGAN
 class StyleGanUpdater(StandardUpdater):
 
 	def __init__(self, generator, discriminator, iterator, optimizer, device, stage, mixing=0.5, alpha=0.0, delta=0.00005, gamma=10):

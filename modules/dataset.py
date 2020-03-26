@@ -3,7 +3,7 @@ from os.path import isfile
 from chainer.dataset import DatasetMixin
 from modules.utilities import load_image, filepath
 
-# Dataset definition for Style GAN
+# Dataset definition for StyleGAN
 class StyleGanDataset(DatasetMixin):
 
 	def __init__(self, directory, size, preload=False):
