@@ -1,6 +1,6 @@
-from chainer import Variable, Chain, Parameter
+from chainer import Parameter, Chain
 from chainer.links import Scale
-from chainer.functions import mean, sqrt, broadcast_to, resize_images
+from chainer.functions import mean, sqrt, broadcast_to, resize_images, gaussian
 from chainer.initializers import Zero, One
 from modules.links import EqualizedLinear, EqualizedConvolution2D, LeakyReluLink, LerpBlendLink
 
@@ -31,6 +31,7 @@ class NoiseAdder(Chain):
 	def __init__(self, channels):
 		super().__init__()
 		with self.init_scope():
+			self.z = Parameter(Zero(), 1)
 			self.s = Scale(W_shape=(channels))
 
 	def __call__(self, x):
@@ -38,8 +39,8 @@ class NoiseAdder(Chain):
 		return x + self.s(n)
 
 	def generate_noises(self, batch, channels, height, width):
-		n = Variable(self.xp.random.normal(size=(batch, 1, height, width)).astype(self.xp.float32))
-		return broadcast_to(n, (batch, channels, height, width))
+		z = broadcast_to(self.z, (batch, 1, height, width))
+		return broadcast_to(gaussian(z, z), (batch, channels, height, width))
 
 # Learnable transform from W to style
 class StyleAffineTransform(Chain):

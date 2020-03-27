@@ -1,6 +1,7 @@
 from random import randint
-from chainer import Variable, Chain, Sequential
-from chainer.functions import mean, sqrt
+from chainer import Parameter, Chain, Sequential
+from chainer.functions import mean, sqrt, broadcast_to, gaussian
+from chainer.initializers import Zero
 from modules.links import EqualizedLinear, LeakyReluLink
 from modules.gchains import InitialSynthesisNetwork, SynthesisNetwork
 from modules.dchains import DiscriminatorChain, FinalDiscriminatorChain, Downsampler
@@ -74,6 +75,7 @@ class Generator(Chain):
 		super().__init__()
 		self.z_size = z_size
 		with self.init_scope():
+			self.zero = Parameter(Zero(), 1)
 			self.mapper = FeatureMapper(z_size, depth)
 			self.generator = ImageGenerator(z_size, *channels, max_stage)
 
@@ -85,7 +87,8 @@ class Generator(Chain):
 			return self.generator(w_mean + psi * (self.mapper(z) - w_mean), stage, alpha, None if mix_z is None else w_mean + psi * (self.mapper(mix_z) - w_mean), mix_stage)
 
 	def generate_latent(self, batch):
-		return Variable(self.xp.random.normal(size=(batch, self.z_size)).astype(self.xp.float32))
+		zeros = broadcast_to(self.zero, (batch, self.z_size))
+		return gaussian(zeros, zeros)
 
 	def resolution(self, stage):
 		return (2 * 2 ** stage, 2 * 2 ** stage)
