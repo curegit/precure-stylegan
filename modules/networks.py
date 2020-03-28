@@ -134,3 +134,6 @@ class Discriminator(Chain):
 		h7 = self.d7(h6, stage == 3, alpha, self.ds(x) if stage == 4 and blend else None) if stage >= 3 else h6
 		h8 = self.d8(h7, stage == 2, alpha, self.ds(x) if stage == 3 and blend else None) if stage >= 2 else h7
 		return self.d9(h8, stage == 1, alpha, self.ds(x) if stage == 2 and blend else None) if stage >= 1 else h8
+
+	def wrap_array(self, array):
+		return Variable(self.xp.array(array))

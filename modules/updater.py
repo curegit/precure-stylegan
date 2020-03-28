@@ -23,10 +23,9 @@ class StyleGanUpdater(StandardUpdater):
 	def update_core(self):
 		batch = self.get_iterator("main").next()
 		batchsize = len(batch)
-		xp = self.generator.xp
-		x_real = Variable(xp.array(batch))
 
 		# Train discriminator
+		x_real = self.discriminator.wrap_array(batch)
 		y_real = self.discriminator(x_real, self.stage, self.alpha)
 		gradient = grad([y_real], [x_real], enable_double_backprop=True)[0]
 		gradient_norm = sum(batch_l2_norm_squared(gradient)) / batchsize
