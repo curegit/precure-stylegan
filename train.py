@@ -41,6 +41,11 @@ parser.add_argument("-l", "--write-interval", metavar="ITER", dest="write", type
 parser.add_argument("-v", "--device", "--gpu", metavar="ID", dest="device", type=device, default=-1, help="use specified GPU or CPU device")
 args = parser.parse_args()
 
+# Config chainer
+global_config.train = True
+global_config.autotune = True
+global_config.cudnn_deterministic = False
+
 # Init models
 print("Initializing models")
 generator = Generator(args.size, args.depth, args.channels, args.maxstage)
@@ -91,11 +96,6 @@ if args.optimizers is not None:
 	serializers.load_hdf5(args.optimizers[1], generator_optimizer)
 	print("Loading discriminator's optimizer")
 	serializers.load_hdf5(args.optimizers[2], discriminator_optimizer)
-
-# Config chainer
-global_config.train = True
-global_config.autotune = True
-global_config.cudnn_deterministic = False
 
 # Prepare updater
 updater = StyleGanUpdater(generator, discriminator, iterator, {"mapper": mapper_optimizer, "generator": generator_optimizer, "discriminator": discriminator_optimizer}, args.device, args.stage, args.mix, args.alpha, args.delta)

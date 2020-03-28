@@ -29,6 +29,11 @@ parser.add_argument("-t", "--truncation-trick", "--psi", metavar="PSI", dest="ps
 parser.add_argument("-v", "--device", "--gpu", metavar="ID", dest="device", type=device, default=-1, help="use specified GPU or CPU device")
 args = parser.parse_args()
 
+# Config chainer
+global_config.train = False
+global_config.autotune = True
+global_config.cudnn_deterministic = True
+
 # Init model
 print("Initializing model")
 generator = Generator(args.size, args.depth, args.channels, args.maxstage)
@@ -61,11 +66,6 @@ if args.center is not None:
 	center = generator.wrap_latent(load_array(args.center))
 else:
 	center = None
-
-# Config chainer
-global_config.train = False
-global_config.autotune = True
-global_config.cudnn_deterministic = True
 
 # Quit mode
 if args.quit:
