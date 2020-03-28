@@ -20,11 +20,11 @@ def filerelpath(relpath):
 	return os.path.join(d, relpath)
 
 # Make alternate file path
-def altfilepath(path):
+def altfilepath(path, suffix="+"):
 	while os.path.lexists(path):
 		root, ext = os.path.splitext(path)
 		head, tail = os.path.split(root)
-		path = os.path.join(head, "_" + tail) + ext
+		path = os.path.join(head, tail + suffix) + ext
 	return path
 
 # Load numpy array from binary file
