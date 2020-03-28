@@ -1,8 +1,13 @@
+import sys
 import os
 import os.path
 import inspect
 from PIL import Image
 from numpy import asarray, rint, clip, uint8, float32, save, load
+
+# Print to stderr
+def eprint(*args, **kwargs):
+	print(*args, file=sys.stderr, **kwargs)
 
 # Wrapper for doing mkdir -p
 def mkdirp(path):

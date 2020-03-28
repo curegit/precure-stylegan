@@ -9,7 +9,7 @@ from modules.updater import StyleGanUpdater
 from modules.dataset import StyleGanDataset
 from modules.networks import Generator, Discriminator
 from modules.argtypes import uint, natural, positive, rate, device
-from modules.utilities import mkdirp, filepath, altfilepath, save_image
+from modules.utilities import eprint, mkdirp, filepath, altfilepath, save_image
 
 # Parse command line arguments
 parser = ArgumentParser(allow_abbrev=False, description="Style-Based GAN's Trainer")
@@ -53,7 +53,7 @@ dataset = StyleGanDataset(args.dataset, (w, h), args.preload)
 iterator = MultiprocessIterator(dataset, batch_size=args.batch, repeat=True, shuffle=True, n_prefetch=4)
 n = dataset.length()
 if n < 1:
-	print("No image found in dataset directory")
+	eprint("No image found in dataset directory")
 	exit(1)
 
 # Print information
