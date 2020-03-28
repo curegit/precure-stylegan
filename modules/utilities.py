@@ -16,7 +16,7 @@ def filepath(dirpath, filename, ext):
 # Build path relatively from caller's script directory
 def filerelpath(relpath):
 	f = inspect.stack()[1].filename
-	d = os.getcwd() if f == "<stdin>" else os.path.dirname(f)
+	d = os.path.dirname(f)
 	return os.path.join(d, relpath)
 
 # Make alternate file path
