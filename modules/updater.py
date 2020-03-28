@@ -29,7 +29,7 @@ class StyleGanUpdater(StandardUpdater):
 		y_real = self.discriminator(x_real, self.stage, self.alpha)
 		gradient = grad([y_real], [x_real], enable_double_backprop=True)[0]
 		gradient_norm = sum(batch_l2_norm_squared(gradient)) / batchsize
-		loss_gamma = self.gamma * gradient_norm / 2
+		loss_grad = self.gamma * gradient_norm / 2
 		z = self.generator.generate_latent(batchsize)
 		if self.mixing > random():
 			mix_z = self.generator.generate_latent(batchsize)
@@ -39,7 +39,7 @@ class StyleGanUpdater(StandardUpdater):
 		y_fake = self.discriminator(x_fake, self.stage, self.alpha)
 		loss_dis = sum(softplus(-y_real)) / batchsize
 		loss_dis += sum(softplus(y_fake)) / batchsize
-		loss_dis += loss_gamma
+		loss_dis += loss_grad
 		x_fake.unchain_backward()
 		self.discriminator.cleargrads()
 		loss_dis.backward()
@@ -62,4 +62,5 @@ class StyleGanUpdater(StandardUpdater):
 		report({"alpha": self.alpha})
 		report({"loss (gen)": loss_gen})
 		report({"loss (dis)": loss_dis})
+		report({"loss (grad)": loss_grad})
 		self.alpha = min(1.0, self.alpha + self.delta)
