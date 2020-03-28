@@ -1,7 +1,8 @@
+from math import log
 from random import randint
-from chainer import Parameter, Chain, Sequential
+from chainer import Variable, Parameter, Chain, Sequential
 from chainer.functions import mean, sqrt, broadcast_to, gaussian
-from chainer.initializers import Zero
+from chainer.initializers import Zero, One
 from modules.links import EqualizedLinear, LeakyReluLink
 from modules.gchains import InitialSynthesisNetwork, SynthesisNetwork
 from modules.dchains import DiscriminatorChain, FinalDiscriminatorChain, Downsampler
@@ -76,6 +77,7 @@ class Generator(Chain):
 		self.z_size = z_size
 		with self.init_scope():
 			self.zero = Parameter(Zero(), 1)
+			self.one = Parameter(One(), 1)
 			self.mapper = FeatureMapper(z_size, depth)
 			self.generator = ImageGenerator(z_size, *channels, max_stage)
 
@@ -86,12 +88,22 @@ class Generator(Chain):
 			w_mean = mean(self.mapper(self.generate_latent(n)), axis=0)
 			return self.generator(w_mean + psi * (self.mapper(z) - w_mean), stage, alpha, None if mix_z is None else w_mean + psi * (self.mapper(mix_z) - w_mean), mix_stage)
 
-	def generate_latent(self, batch):
-		zeros = broadcast_to(self.zero, (batch, self.z_size))
-		return gaussian(zeros, zeros)
-
 	def resolution(self, stage):
 		return (2 * 2 ** stage, 2 * 2 ** stage)
+
+	def generate_latent(self, batch, center=None, sd=None):
+		std_dev = 1.0 if sd is None else sd
+		zeros = broadcast_to(self.zero, (batch, self.z_size))
+		ones = broadcast_to(self.one, (batch, self.z_size))
+		ln_var = log(std_dev ** 2) * ones
+		if center is None:
+			return gaussian(zeros, ln_var)
+		else:
+			mean = broadcast_to(center, (batch, self.z_size))
+			return gaussian(mean, ln_var)
+
+	def wrap_latent(self, array):
+		return Variable(self.xp.array(array))
 
 # Discriminator network
 class Discriminator(Chain):

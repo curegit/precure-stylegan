@@ -3,8 +3,8 @@ from shutil import rmtree
 from argparse import ArgumentParser
 from chainer import serializers, global_config
 from modules.networks import Generator
-from modules.argtypes import uint, natural, ufloat, rate, filename, device
-from modules.utilities import mkdirp, filepath, altfilepath, save_array, save_image
+from modules.argtypes import uint, natural, ufloat, positive, rate, filename, device
+from modules.utilities import mkdirp, filepath, altfilepath, load_array, save_array, save_image
 
 # Parse command line arguments
 parser = ArgumentParser(allow_abbrev=False, description="Style-Based GAN's Generator")
@@ -23,6 +23,8 @@ parser.add_argument("-m", "--mlp-depth", metavar="DEPTH", dest="depth", type=nat
 parser.add_argument("-n", "--number", type=uint, default=1, help="the number of images to generate")
 parser.add_argument("-b", "--batch", type=natural, default=1, help="batch size, affecting memory usage")
 parser.add_argument("-a", "--alpha", type=rate, default=1.0, help="")
+parser.add_argument("-l", "--latent", "--center", metavar="FILE", dest="center", help="")
+parser.add_argument("-e", "--deviation", "--sd", metavar="SIGMA", dest="sd", type=positive, help="")
 parser.add_argument("-t", "--truncation-trick", "--psi", metavar="PSI", dest="psi", type=ufloat, help="")
 parser.add_argument("-v", "--device", "--gpu", metavar="ID", dest="device", type=device, default=-1, help="use specified GPU or CPU device")
 args = parser.parse_args()
@@ -54,6 +56,12 @@ if args.device >= 0:
 	print("Converting to GPU")
 	generator.to_gpu(args.device)
 
+# Load center latent
+if args.center is not None:
+	center = generator.wrap_latent(load_array(args.center))
+else:
+	center = None
+
 # Config chainer
 global_config.train = False
 global_config.autotune = True
@@ -68,7 +76,7 @@ if args.quit:
 c = 0
 while c < args.number:
 	n = min(args.number - c, args.batch)
-	z = generator.generate_latent(n)
+	z = generator.generate_latent(n, center=center, sd=args.sd)
 	y = generator(z, args.stage, alpha=args.alpha, psi=args.psi)
 	z.to_cpu()
 	y.to_cpu()
