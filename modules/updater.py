@@ -31,11 +31,8 @@ class StyleGanUpdater(StandardUpdater):
 		gradient_norm = sum(batch_l2_norm_squared(gradient)) / batchsize
 		loss_grad = self.gamma * gradient_norm / 2
 		z = self.generator.generate_latent(batchsize)
-		if self.mixing > random():
-			mix_z = self.generator.generate_latent(batchsize)
-			x_fake = self.generator(z, self.stage, self.alpha, mix_z)
-		else:
-			x_fake = self.generator(z, self.stage, self.alpha)
+		mix_z = self.generator.generate_latent(batchsize) if self.mixing > random() else None
+		x_fake = self.generator(z, self.stage, self.alpha, mix_z)
 		y_fake = self.discriminator(x_fake, self.stage, self.alpha)
 		loss_dis = sum(softplus(-y_real)) / batchsize
 		loss_dis += sum(softplus(y_fake)) / batchsize
@@ -47,11 +44,8 @@ class StyleGanUpdater(StandardUpdater):
 
 		# Train generator
 		z = self.generator.generate_latent(batchsize)
-		if self.mixing > random():
-			mix_z = self.generator.generate_latent(batchsize)
-			x_fake = self.generator(z, self.stage, self.alpha, mix_z)
-		else:
-			x_fake = self.generator(z, self.stage, self.alpha)
+		mix_z = self.generator.generate_latent(batchsize) if self.mixing > random() else None
+		x_fake = self.generator(z, self.stage, self.alpha, mix_z)
 		y_fake = self.discriminator(x_fake, self.stage, self.alpha)
 		loss_gen = sum(softplus(-y_fake)) / batchsize
 		self.generator.cleargrads()
