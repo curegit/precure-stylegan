@@ -1,5 +1,5 @@
 from random import random
-from chainer import grad, Variable
+from chainer import grad
 from chainer.reporter import report
 from chainer.training import StandardUpdater
 from chainer.functions import sum, batch_l2_norm_squared, softplus
