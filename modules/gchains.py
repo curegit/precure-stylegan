@@ -74,8 +74,8 @@ class InitialSynthesisNetwork(Chain):
 		super().__init__()
 		with self.init_scope():
 			self.p1 = Constant(in_channels, height, width)
-			self.n1 = NoiseAdder(out_channels)
-			self.a1 = StyleAffineTransform(w_size, out_channels)
+			self.n1 = NoiseAdder(in_channels)
+			self.a1 = StyleAffineTransform(w_size, in_channels)
 			self.i1 = AdaptiveInstanceNormalization()
 			self.c1 = EqualizedConvolution2D(in_channels, out_channels, ksize=3, stride=1, pad=1)
 			self.r1 = LeakyReluLink(0.2)
