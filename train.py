@@ -69,7 +69,7 @@ print(f"MLP: {args.size}x{args.depth}, Stage: {args.stage}/{args.maxstage} ({w}x
 print(f"Channel: {args.channels[0]} (initial) -> {args.channels[1]} (final)")
 print(f"Epoch: {args.epoch}, Batch: {args.batch}, Dataset Images: {n}")
 print(f"Mixing Rate: {args.mix * 100:.1f}%, Initial Alpha: {args.alpha:.3f}, Delta: {args.delta} (/iter)")
-print(f"Gamma: {args.gamma}, Device: {'CPU' if args.device < 0 else f'GPU {args.device}'}")
+print(f"Objective: {'Least Squares' if args.lsgan else 'Adversarial'}, Gamma: {args.gamma}, Device: {'CPU' if args.device < 0 else f'GPU {args.device}'}")
 
 # Load models
 if args.generator is not None:
