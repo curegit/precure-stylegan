@@ -7,11 +7,12 @@ from chainer.functions import sum, batch_l2_norm_squared, softplus
 # Updater for StyleGAN
 class StyleGanUpdater(StandardUpdater):
 
-	def __init__(self, generator, discriminator, iterator, optimizer, device, stage, mixing=0.5, alpha=0.0, delta=0.00005, gamma=10):
+	def __init__(self, generator, discriminator, iterator, optimizer, device, stage, mixing=0.5, alpha=0.0, delta=0.00005, gamma=10, lsgan=False):
 		super().__init__(iterator, optimizer, device=device)
 		self.alpha = alpha
 		self.delta = delta
 		self.gamma = gamma
+		self.lsgan = lsgan
 		self.stage = stage
 		self.mixing = mixing
 		self.generator = generator
@@ -34,8 +35,7 @@ class StyleGanUpdater(StandardUpdater):
 		mix_z = self.generator.generate_latent(batchsize) if self.mixing > random() else None
 		x_fake = self.generator(z, self.stage, self.alpha, mix_z)
 		y_fake = self.discriminator(x_fake, self.stage, self.alpha)
-		loss_dis = sum(softplus(-y_real)) / batchsize
-		loss_dis += sum(softplus(y_fake)) / batchsize
+		loss_dis = ((sum((y_real - 1) ** 2) + sum(y_fake ** 2)) / 2 if self.lsgan else (sum(softplus(-y_real)) + sum(softplus(y_fake)))) / batchsize
 		loss_dis += loss_grad
 		x_fake.unchain_backward()
 		self.discriminator.cleargrads()
@@ -47,7 +47,7 @@ class StyleGanUpdater(StandardUpdater):
 		mix_z = self.generator.generate_latent(batchsize) if self.mixing > random() else None
 		x_fake = self.generator(z, self.stage, self.alpha, mix_z)
 		y_fake = self.discriminator(x_fake, self.stage, self.alpha)
-		loss_gen = sum(softplus(-y_fake)) / batchsize
+		loss_gen = (sum((y_fake - 1) ** 2) / 2 if self.lsgan else sum(softplus(-y_fake))) / batchsize
 		self.generator.cleargrads()
 		loss_gen.backward()
 		self.mapper_optimizer.update()

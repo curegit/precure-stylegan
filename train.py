@@ -37,6 +37,7 @@ parser.add_argument("-e", "--epoch", type=natural, default=1, help="")
 parser.add_argument("-a", "--alpha", type=rate, default=0.0, help="")
 parser.add_argument("-t", "--delta", type=positive, default=0.00005, help="")
 parser.add_argument("-G", "--gamma", "--l2-batch", dest="gamma", type=ufloat, default=10, help="")
+parser.add_argument("-L", "--lsgan", action="store_true", help="")
 parser.add_argument("-i", "--style-mixing", metavar="RATE", dest="mix", type=rate, default=0.5, help="")
 parser.add_argument("-u", "--print-interval", metavar="ITER", dest="print", type=uint, nargs=2, default=(5, 500), help="")
 parser.add_argument("-l", "--write-interval", metavar="ITER", dest="write", type=uint, nargs=4, default=(1000, 3000, 1000, 500), help="")
@@ -100,7 +101,7 @@ if args.optimizers is not None:
 	serializers.load_hdf5(args.optimizers[2], discriminator_optimizer)
 
 # Prepare updater
-updater = StyleGanUpdater(generator, discriminator, iterator, {"mapper": mapper_optimizer, "generator": generator_optimizer, "discriminator": discriminator_optimizer}, args.device, args.stage, args.mix, args.alpha, args.delta, args.gamma)
+updater = StyleGanUpdater(generator, discriminator, iterator, {"mapper": mapper_optimizer, "generator": generator_optimizer, "discriminator": discriminator_optimizer}, args.device, args.stage, args.mix, args.alpha, args.delta, args.gamma, args.lsgan)
 
 # Init result directory
 print("Initializing destination directory")
