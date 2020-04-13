@@ -81,7 +81,7 @@ class Generator(Chain):
 			self.mapper = FeatureMapper(z_size, depth)
 			self.generator = ImageGenerator(z_size, *channels, max_stage)
 
-	def __call__(self, z, stage, alpha=1.0, mix_z=None, mix_stage=None, psi=None, n=20000):
+	def __call__(self, z, stage, alpha=1.0, mix_z=None, mix_stage=None, psi=None, n=10000):
 		if psi is None:
 			return self.generator(self.mapper(z), stage, alpha, None if mix_z is None else self.mapper(mix_z), mix_stage)
 		else:
