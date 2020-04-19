@@ -40,7 +40,7 @@ parser.add_argument("-G", "--gamma", "--l2-batch", dest="gamma", type=ufloat, de
 parser.add_argument("-L", "--lsgan", "--least-squares", action="store_true", help="")
 parser.add_argument("-i", "--style-mixing", metavar="RATE", dest="mix", type=rate, default=0.5, help="")
 parser.add_argument("-u", "--print-interval", metavar="ITER", dest="print", type=uint, nargs=2, default=(5, 500), help="")
-parser.add_argument("-l", "--write-interval", metavar="ITER", dest="write", type=uint, nargs=4, default=(1000, 3000, 1000, 500), help="")
+parser.add_argument("-l", "--write-interval", metavar="ITER", dest="write", type=uint, nargs=4, default=(1000, 3000, 500, 500), help="")
 parser.add_argument("-v", "--device", "--gpu", metavar="ID", dest="device", type=device, default=-1, help="use specified GPU or CPU device")
 args = parser.parse_args()
 
