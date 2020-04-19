@@ -1,4 +1,3 @@
-from os.path import basename
 from shutil import rmtree
 from argparse import ArgumentParser
 from chainer import serializers, global_config
@@ -84,7 +83,7 @@ while c < args.number:
 		path = filepath(args.directory, f"{args.prefix}{c + i + 1}", "png")
 		path = path if args.force else altfilepath(path)
 		save_image(y.array[i], path)
-		print(f"{c + i + 1}/{args.number}: Saved as {basename(path)}")
+		print(f"{c + i + 1}/{args.number}: Saved as {path}")
 		if not args.image_only:
 			path = filepath(args.directory, f"{args.prefix}{c + i + 1}", "npy")
 			path = path if args.force else altfilepath(path)
