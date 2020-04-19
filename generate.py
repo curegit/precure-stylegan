@@ -23,7 +23,7 @@ parser.add_argument("-n", "--number", type=uint, default=1, help="the number of 
 parser.add_argument("-b", "--batch", type=natural, default=1, help="batch size, affecting memory usage")
 parser.add_argument("-a", "--alpha", type=rate, default=1.0, help="")
 parser.add_argument("-l", "--latent", "--center", metavar="FILE", dest="center", help="")
-parser.add_argument("-e", "--deviation", "--sd", metavar="SIGMA", dest="sd", type=positive, help="")
+parser.add_argument("-e", "--deviation", "--sd", metavar="SIGMA", dest="sd", type=positive, default=1.0, help="")
 parser.add_argument("-t", "--truncation-trick", "--psi", metavar="PSI", dest="psi", type=ufloat, help="")
 parser.add_argument("-v", "--device", "--gpu", metavar="ID", dest="device", type=device, default=-1, help="use specified GPU or CPU device")
 args = parser.parse_args()
