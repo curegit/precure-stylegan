@@ -91,11 +91,10 @@ class Generator(Chain):
 	def resolution(self, stage):
 		return (2 * 2 ** stage, 2 * 2 ** stage)
 
-	def generate_latent(self, batch, center=None, sd=None):
-		std_dev = 1.0 if sd is None else sd
+	def generate_latent(self, batch, center=None, sd=1.0):
 		zeros = broadcast_to(self.zero, (batch, self.z_size))
 		ones = broadcast_to(self.one, (batch, self.z_size))
-		ln_var = log(std_dev ** 2) * ones
+		ln_var = log(sd ** 2) * ones
 		if center is None:
 			return gaussian(zeros, ln_var)
 		else:
