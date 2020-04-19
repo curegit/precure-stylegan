@@ -10,7 +10,7 @@ from modules.updater import StyleGanUpdater
 from modules.dataset import StyleGanDataset
 from modules.networks import Generator, Discriminator
 from modules.argtypes import uint, natural, ufloat, positive, rate, device
-from modules.utilities import eprint, mkdirp, filepath, altfilepath, save_image
+from modules.utilities import eprint, mkdirp, filepath, altfilepath, save_array, save_image
 
 # Parse command line arguments
 parser = ArgumentParser(allow_abbrev=False, description="Style-Based GAN's Trainer")
@@ -110,7 +110,7 @@ if args.wipe:
 mkdirp(args.result)
 
 # Define extension to output images in progress
-def save_middle_images(generator, stage, directory, number, batch, mix, force=True):
+def save_middle_images(generator, stage, directory, number, batch, mix, force=True, save_latent=True):
 	@make_extension()
 	def func(trainer):
 		c = 0
@@ -120,11 +120,16 @@ def save_middle_images(generator, stage, directory, number, batch, mix, force=Tr
 			z = generator.generate_latent(n)
 			mix_z = generator.generate_latent(n) if mixing else None
 			y = generator(z, stage, trainer.updater.alpha, mix_z)
+			z.to_cpu()
 			y.to_cpu()
 			for i in range(n):
 				path = filepath(directory, f"{stage}_{trainer.updater.iteration}_{trainer.updater.alpha:.3f}_{c + i + 1}", "png")
 				path = path if force else altfilepath(path)
 				save_image(y.array[i], path)
+				if save_latent:
+					path = filepath(directory, f"{stage}_{trainer.updater.iteration}_{trainer.updater.alpha:.3f}_{c + i + 1}", "npy")
+					path = path if force else altfilepath(path)
+					save_array(z.array[i], path)
 			c += n
 	return func
 
