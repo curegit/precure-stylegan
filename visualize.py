@@ -49,8 +49,10 @@ dg_path = filepath(path, filename_g, "dot")
 dd_path = filepath(path, filename_d, "dot")
 with open(dg_path, "w") as f:
 	f.write(dg)
+print(f"Saved: {dg_path}")
 with open(dd_path, "w") as f:
 	f.write(dd)
+print(f"Saved: {dd_path}")
 
 # Save as PDF
 pg_path = filepath(path, filename_g, "pdf")
@@ -58,4 +60,6 @@ pd_path = filepath(path, filename_d, "pdf")
 gg = graph_from_dot_data(dg)[0]
 gd = graph_from_dot_data(dd)[0]
 gg.write_pdf(pg_path)
+print(f"Saved: {pg_path}")
 gd.write_pdf(pd_path)
+print(f"Saved: {pd_path}")
