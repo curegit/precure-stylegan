@@ -58,11 +58,11 @@ discriminator = Discriminator(args.channels, args.maxstage)
 print("Loading dataset" if args.preload else "Scanning dataset")
 h, w = generator.resolution(args.stage)
 dataset = StyleGanDataset(args.dataset, (w, h), args.preload)
-iterator = MultiprocessIterator(dataset, batch_size=args.batch, repeat=True, shuffle=True, n_prefetch=4)
 n = dataset.length()
 if n < 1:
 	eprint("No image found in dataset directory")
 	exit(1)
+iterator = MultiprocessIterator(dataset, batch_size=args.batch, repeat=True, shuffle=True, n_prefetch=4)
 
 # Print information
 print(f"MLP: {args.size}x{args.depth}, Stage: {args.stage}/{args.maxstage} ({w}x{h})")
