@@ -12,6 +12,8 @@
 
 ### Anime Face
 
+![Anime Face](examples/anime.png)
+
 ## Dataset References
 
 [Anime-Face-Dataset](https://github.com/Mckinsey666/Anime-Face-Dataset)
