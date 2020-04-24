@@ -7,8 +7,8 @@ from chainer.functions import sum, batch_l2_norm_squared, softplus
 # Updater for StyleGAN
 class StyleGanUpdater(StandardUpdater):
 
-	def __init__(self, generator, discriminator, iterator, optimizer, device, stage, mixing=0.5, alpha=0.0, delta=0.00005, gamma=10, lsgan=False):
-		super().__init__(iterator, optimizer, device=device)
+	def __init__(self, generator, discriminator, iterator, optimizers, device, stage, mixing=0.5, alpha=0.0, delta=0.00005, gamma=10, lsgan=False):
+		super().__init__(iterator, optimizers, device=device)
 		self.alpha = alpha
 		self.delta = delta
 		self.gamma = gamma
@@ -17,9 +17,9 @@ class StyleGanUpdater(StandardUpdater):
 		self.mixing = mixing
 		self.generator = generator
 		self.discriminator = discriminator
-		self.mapper_optimizer = optimizer["mapper"]
-		self.generator_optimizer = optimizer["generator"]
-		self.discriminator_optimizer = optimizer["discriminator"]
+		self.mapper_optimizer = optimizers["mapper"]
+		self.generator_optimizer = optimizers["generator"]
+		self.discriminator_optimizer = optimizers["discriminator"]
 
 	def update_core(self):
 		batch = self.get_iterator("main").next()
