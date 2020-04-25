@@ -32,7 +32,7 @@ parser.add_argument("-c", "--channels", metavar="CH", type=natural, nargs=2, def
 parser.add_argument("-z", "--z-size", dest="size", type=natural, default=512, help="latent vector (feature vector) size")
 parser.add_argument("-m", "--mlp-depth", dest="depth", type=natural, default=8, help="MLP depth of mapping network")
 parser.add_argument("-n", "--number", type=uint, default=10, help="the number of middle images to generate")
-parser.add_argument("-b", "--batch", type=natural, default=4, help="batch size, affecting memory usage")
+parser.add_argument("-b", "--batch", type=natural, default=16, help="batch size, affecting memory usage")
 parser.add_argument("-e", "--epoch", type=natural, default=1, help="")
 parser.add_argument("-a", "--alpha", type=rate, default=0.0, help="")
 parser.add_argument("-t", "--delta", type=positive, default=0.00005, help="")
