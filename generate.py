@@ -75,10 +75,11 @@ if args.quit:
 
 # Generate images
 c = 0
+mean_w = None if args.psi is None else generator.calculate_mean_w()
 while c < args.number:
 	n = min(args.number - c, args.batch)
 	z = generator.generate_latent(n, center=center, sd=args.sd)
-	y = generator(z, args.stage, alpha=args.alpha, psi=args.psi)
+	y = generator(z, args.stage, alpha=args.alpha, psi=args.psi, mean_w=mean_w)
 	z.to_cpu()
 	y.to_cpu()
 	for i in range(n):

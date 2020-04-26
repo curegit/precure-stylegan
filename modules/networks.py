@@ -81,12 +81,12 @@ class Generator(Chain):
 			self.mapper = FeatureMapper(z_size, depth)
 			self.generator = ImageGenerator(z_size, *channels, max_stage)
 
-	def __call__(self, z, stage, alpha=1.0, mix_z=None, mix_stage=None, psi=None, n=10000):
+	def __call__(self, z, stage, alpha=1.0, mix_z=None, mix_stage=None, psi=None, mean_w=None):
 		if psi is None:
 			return self.generator(self.mapper(z), stage, alpha, None if mix_z is None else self.mapper(mix_z), mix_stage)
 		else:
-			w_mean = mean(self.mapper(self.generate_latent(n)), axis=0)
-			return self.generator(w_mean + psi * (self.mapper(z) - w_mean), stage, alpha, None if mix_z is None else w_mean + psi * (self.mapper(mix_z) - w_mean), mix_stage)
+			mw = mean_w if mean_w is not None else calculate_mean_w()
+			return self.generator(mw + psi * (self.mapper(z) - mw), stage, alpha, None if mix_z is None else mw + psi * (self.mapper(mix_z) - mw), mix_stage)
 
 	def resolution(self, stage):
 		return (2 * 2 ** stage, 2 * 2 ** stage)
@@ -100,6 +100,9 @@ class Generator(Chain):
 		else:
 			mean = broadcast_to(center, (batch, self.z_size))
 			return gaussian(mean, ln_var)
+
+	def calculate_mean_w(self, n=10000):
+		return mean(self.mapper(self.generate_latent(n)), axis=0)
 
 	def wrap_latent(self, array):
 		return Variable(self.xp.array(array))
