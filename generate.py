@@ -42,7 +42,7 @@ h, w = generator.resolution(args.stage)
 print(f"Total Generation: {args.number}, Batch: {args.batch}")
 print(f"MLP: {args.size}x{args.depth}, Stage: {args.stage}/{args.maxstage} ({w}x{h})")
 print(f"Channel: {args.channels[0]} (initial) -> {args.channels[1]} (final)")
-print(f"Alpha: {args.alpha:.3f}, Latent: {'Yes' if args.center is not None else 'No'}, Deviation: {args.sd}")
+print(f"Alpha: {args.alpha}, Latent: {'Yes' if args.center is not None else 'No'}, Deviation: {args.sd}")
 print(f"Truncation Trick: {args.psi if args.psi is not None else 'No'}, Device: {'CPU' if args.device < 0 else f'GPU {args.device}'}")
 
 # Init destination folder
