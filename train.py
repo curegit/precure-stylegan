@@ -182,11 +182,11 @@ def save_middle_optimizers(mapper_optimizer, generator_optimizer, discriminator_
 # Prepare trainer
 logpath = filepath(args.result, "report", "log")
 logname = basename(logpath if args.force else altfilepath(logpath))
-plotpath = filepath(args.result, "report", "png")
+plotpath = filepath(args.result, "plot", "png")
 plotname = basename(plotpath if args.force else altfilepath(plotpath))
 trainer = Trainer(updater, (args.epoch, "epoch"), out=args.result)
 if args.print[0] > 0: trainer.extend(extensions.ProgressBar(update_interval=args.print[0]))
-if args.print[1] > 0: trainer.extend(extensions.PrintReport(["epoch", "iteration", "alpha", "loss (gen)", "loss (dis)", "loss (grad)"], extensions.LogReport(trigger=(args.print[1], "iteration"), filename=None)))
+if args.print[1] > 0: trainer.extend(extensions.PrintReport(["epoch", "iteration", "alpha", "loss (gen)", "loss (dis)", "loss (grad)"], extensions.LogReport(trigger=(args.print[1], "iteration"), log_name=None)))
 if args.write[0] > 0: trainer.extend(save_middle_images(generator, args.stage, args.result, args.number, args.batch, args.mix, args.force), trigger=(args.write[0], "iteration"))
 if args.write[1] > 0: trainer.extend(save_middle_models(generator, discriminator, args.stage, args.result, args.device, args.force), trigger=(args.write[1], "iteration"))
 if args.write[1] > 0: trainer.extend(save_middle_optimizers(mapper_optimizer, generator_optimizer, discriminator_optimizer, args.stage, args.result, args.force), trigger=(args.write[1], "iteration"))
