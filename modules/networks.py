@@ -98,8 +98,8 @@ class Generator(Chain):
 		if center is None:
 			return gaussian(zeros, ln_var)
 		else:
-			mean = broadcast_to(center, (batch, self.z_size))
-			return gaussian(mean, ln_var)
+			mean_z = broadcast_to(center, (batch, self.z_size))
+			return gaussian(mean_z, ln_var)
 
 	def calculate_mean_w(self, n=10000):
 		return mean(self.mapper(self.generate_latent(n)), axis=0)
