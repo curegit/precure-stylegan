@@ -85,8 +85,7 @@ class Generator(Chain):
 		if psi is None:
 			return self.generator(self.mapper(z), stage, alpha, None if mix_z is None else self.mapper(mix_z), mix_stage)
 		else:
-			mw = mean_w if mean_w is not None else calculate_mean_w()
-			return self.generator(mw + psi * (self.mapper(z) - mw), stage, alpha, None if mix_z is None else mw + psi * (self.mapper(mix_z) - mw), mix_stage)
+			return self.generator(self.truncation_trick(self.mapper(z), psi, mean_w), stage, alpha, None if mix_z is None else self.truncation_trick(self.mapper(mix_z), psi, mean_w), mix_stage)
 
 	def resolution(self, stage):
 		return (2 * 2 ** stage, 2 * 2 ** stage)
@@ -103,6 +102,10 @@ class Generator(Chain):
 
 	def calculate_mean_w(self, n=10000):
 		return mean(self.mapper(self.generate_latent(n)), axis=0)
+
+	def truncation_trick(self, w, psi=0.7, mean_w=None):
+		mean_w = mean_w if mean_w is not None else calculate_mean_w()
+		return mean_w + psi * (w - mean_w)
 
 	def wrap_latent(self, array):
 		return Variable(self.xp.array(array))
