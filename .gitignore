@@ -6,6 +6,8 @@
 *.npy
 *.npz
 *.png
+*.gif
+*.webp
 !examples/*.png
 
 # Byte-compiled / optimized / DLL files
