@@ -45,12 +45,6 @@ print(f"Channel: {args.channels[0]} (initial) -> {args.channels[1]} (final)")
 print(f"Alpha: {args.alpha}, Latent: {'Yes' if args.center is not None else 'No'}, Deviation: {args.sd}")
 print(f"Truncation Trick: {args.psi if args.psi is not None else 'No'}, Device: {'CPU' if args.device < 0 else f'GPU {args.device}'}")
 
-# Init destination folder
-print("Initializing destination directory")
-if args.wipe:
-	rmtree(args.directory, ignore_errors=True)
-mkdirp(args.directory)
-
 # Load model
 if args.generator is not None:
 	print("Loading generator")
@@ -67,6 +61,12 @@ if args.center is not None:
 	center = generator.wrap_latent(load_array(args.center))
 else:
 	center = None
+
+# Init destination folder
+print("Initializing destination directory")
+if args.wipe:
+	rmtree(args.directory, ignore_errors=True)
+mkdirp(args.directory)
 
 # Quit mode
 if args.quit:
