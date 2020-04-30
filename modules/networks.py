@@ -104,7 +104,7 @@ class Generator(Chain):
 		return mean(self.mapper(self.generate_latent(n)), axis=0)
 
 	def truncation_trick(self, w, psi=0.7, mean_w=None):
-		mean_w = mean_w if mean_w is not None else calculate_mean_w()
+		mean_w = mean_w if mean_w is not None else self.calculate_mean_w()
 		return mean_w + psi * (w - mean_w)
 
 	def wrap_latent(self, array):
