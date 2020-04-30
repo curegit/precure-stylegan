@@ -184,6 +184,7 @@ for i, w in enumerate(w_iterator, 1):
 # Merge frames
 for ext in ["png"] + (["webp"] if args.webp else []) + (["gif"] if args.gif else []):
 	path = filepath("." if args.current else args.directory, f"{args.prefix}analogy", ext)
+	path = path if args.force else altfilepath(path)
 	if args.repeat:
 		images[0].save(path, save_all=True, duration=args.duration, append_images=images[1:], loop=0)
 	else:
