@@ -1,3 +1,4 @@
+from json import dump
 from shutil import rmtree
 from argparse import ArgumentParser
 from chainer import serializers, global_config
@@ -10,6 +11,7 @@ parser = ArgumentParser(allow_abbrev=False, description="Style-Based GAN's Gener
 parser.add_argument("-q", "--quit", action="store_true", help="")
 parser.add_argument("-f", "--force", action="store_true", help="allow overwrite existing files")
 parser.add_argument("-w", "--wipe", action="store_true", help="")
+parser.add_argument("-j", "--dump-json", action="store_true", help="")
 parser.add_argument("-i", "--image-only", action="store_true", help="")
 parser.add_argument("-r", "--result", "-d", "--directory", metavar="DEST", dest="directory", default="images", help="destination directory for generated images")
 parser.add_argument("-p", "--prefix", type=filename, default="", help="filename prefix for generated images")
@@ -67,6 +69,13 @@ print("Initializing destination directory")
 if args.wipe:
 	rmtree(args.directory, ignore_errors=True)
 mkdirp(args.directory)
+
+# Dump command-line options
+if args.dump_json:
+	path = filepath(args.directory, "args", "json")
+	path = path if args.force else altfilepath(path)
+	with open(path, mode="w", encoding="utf-8") as fp:
+		dump(vars(args), fp, indent=2, sort_keys=True)
 
 # Quit mode
 if args.quit:

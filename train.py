@@ -1,5 +1,6 @@
 from random import random
 from os.path import basename
+from json import dump
 from shutil import rmtree
 from datetime import datetime
 from argparse import ArgumentParser
@@ -122,6 +123,12 @@ print("Initializing destination directory")
 if args.wipe:
 	rmtree(args.result, ignore_errors=True)
 mkdirp(args.result)
+
+# Dump command-line options
+path = filepath(args.result, "args", "json")
+path = path if args.force else altfilepath(path)
+with open(path, mode="w", encoding="utf-8") as fp:
+	dump(vars(args), fp, indent=2, sort_keys=True)
 
 # Define extension to output images in progress
 def save_middle_images(generator, stage, directory, number, batch, mix, force=True, save_latent=True):
