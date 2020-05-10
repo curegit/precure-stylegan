@@ -1,5 +1,16 @@
 # Precure StyleGAN
 
+## Requirements
+
+- Chainer >= 7
+- Pillow >= 7.1
+- Numpy
+
+### Optional
+
+- Cupy
+- PyDot (Graphviz)
+
 ## Other Datasets
 
 ### MNIST
