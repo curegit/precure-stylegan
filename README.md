@@ -5,6 +5,7 @@
 - Chainer >= 7
 - Pillow >= 7.1
 - Numpy
+- H5Py
 
 ### Optional
 
