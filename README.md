@@ -2,15 +2,15 @@
 
 ## Requirements
 
-- Chainer >= 7
+- Chainer >= 7.0
 - Pillow >= 7.1
 - Numpy
-- H5Py
+- H5py
 
 ### Optional
 
 - Cupy
-- PyDot (Graphviz)
+- Pydot (Graphviz)
 
 ## Other Datasets
 
