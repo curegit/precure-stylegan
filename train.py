@@ -60,6 +60,7 @@ discriminator = Discriminator(args.channels, args.maxstage)
 
 # Prepare dataset
 print("Loading dataset" if args.preload else "Scanning dataset")
+args.stage = args.maxstage if args.stage > args.maxstage else args.stage
 h, w = generator.resolution(args.stage)
 dataset = StyleGanDataset(args.dataset, (w, h), args.preload)
 n = dataset.length()

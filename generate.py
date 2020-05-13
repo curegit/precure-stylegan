@@ -40,6 +40,7 @@ print("Initializing model")
 generator = Generator(args.size, args.depth, args.channels, args.maxstage)
 
 # Print information
+args.stage = args.maxstage if args.stage > args.maxstage else args.stage
 h, w = generator.resolution(args.stage)
 print(f"Total Generation: {args.number}, Batch: {args.batch}")
 print(f"MLP: {args.size}x{args.depth}, Stage: {args.stage}/{args.maxstage} ({w}x{h})")
