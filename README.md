@@ -2,6 +2,7 @@
 
 ## Requirements
 
+- Python >= 3.6
 - Chainer >= 7.0
 - Pillow >= 7.1
 - Numpy
@@ -26,6 +27,10 @@
 
 ![Anime Face](examples/anime.png)
 
-## Dataset References
+## Bibliography
 
-[Anime-Face-Dataset](https://github.com/Mckinsey666/Anime-Face-Dataset)
+- [Progressive Growing of GANs for Improved Quality, Stability, and Variation](https://arxiv.org/abs/1710.10196)
+- [A Style-Based Generator Architecture for Generative Adversarial Networks](https://arxiv.org/abs/1812.04948)
+- [Chainer implementation of Style-based Generator](https://github.com/pfnet-research/chainer-stylegan)
+- [Chainer-StyleBasedGAN](https://github.com/RUTILEA/Chainer-StyleBasedGAN)
+- [Anime-Face-Dataset](https://github.com/Mckinsey666/Anime-Face-Dataset)
