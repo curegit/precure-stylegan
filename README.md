@@ -34,3 +34,7 @@
 - [Chainer implementation of Style-based Generator](https://github.com/pfnet-research/chainer-stylegan)
 - [Chainer-StyleBasedGAN](https://github.com/RUTILEA/Chainer-StyleBasedGAN)
 - [Anime-Face-Dataset](https://github.com/Mckinsey666/Anime-Face-Dataset)
+
+## License
+
+[CC BY-NC 4.0](LICENSE)
