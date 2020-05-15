@@ -13,6 +13,12 @@
 - Cupy
 - Pydot (Graphviz)
 
+## Examples
+
+## Cure Beauty
+
+![Cure Beauty](examples/beauty.png)
+
 ## Other Datasets
 
 ### MNIST
