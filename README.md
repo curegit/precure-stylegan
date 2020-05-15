@@ -13,9 +13,31 @@
 - Cupy
 - Pydot (Graphviz)
 
-## Examples
+## Script 
 
-## Cure Beauty
+- `train.py`
+
+  train StyleGAN
+
+- `generate.py`
+
+  generate images of trained model
+
+- `animate.py`
+
+  make analogy animation
+
+- `visualize.py`
+
+  draw an example of computation graph (debug) (Pydot and Graphviz is required)
+
+- `check.py`
+
+  analyze chainer environment
+
+## Results
+
+### Cure Beauty
 
 ![Cure Beauty](examples/beauty.png)
 
