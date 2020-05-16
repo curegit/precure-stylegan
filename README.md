@@ -71,6 +71,7 @@ We also tested it with other common datasets.
 
 - [Progressive Growing of GANs for Improved Quality, Stability, and Variation](https://arxiv.org/abs/1710.10196)
 - [A Style-Based Generator Architecture for Generative Adversarial Networks](https://arxiv.org/abs/1812.04948)
+- [Least Squares Generative Adversarial Networks](https://arxiv.org/abs/1611.04076)
 - [Chainer implementation of Style-based Generator](https://github.com/pfnet-research/chainer-stylegan)
 - [Chainer-StyleBasedGAN](https://github.com/RUTILEA/Chainer-StyleBasedGAN)
 - [Anime-Face-Dataset](https://github.com/Mckinsey666/Anime-Face-Dataset)
