@@ -27,9 +27,7 @@ We also tested it with other common datasets.
 
 ## Script Synopses
 
-- `train.py`
-
-  train StyleGAN
+- `train.py` trains StyleGAN.
 
 - `generate.py`
 
@@ -42,10 +40,12 @@ We also tested it with other common datasets.
 - `visualize.py`
 
   draw an example of computation graph (debug) (Pydot and Graphviz is required)
-
+  It takes no command arguments.
+  
 - `check.py`
 
   analyze chainer environment
+  It takes no command arguments.
 
 ## Results
 
