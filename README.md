@@ -1,5 +1,15 @@
 # Precure StyleGAN
 
+Yet another StyleGAN implementation we tried out generation of Precure (Japanese anime) images
+
+## Overview
+
+StyleGAN is a generative adversarial network introduced by NVIDIA researchers.
+Its output image resolutions grow progressively during training like PGGAN.
+This implementation supports 8px squared (stage 1) to 1024px squared (stage 9) images.
+Most part of implementation follows the original paper, but we installed some enhancements.
+For instance, we implementated alternate least-square objective introduced in LSGAN.
+
 ## Requirements
 
 - Python >= 3.6
@@ -13,7 +23,7 @@
 - Cupy
 - Pydot (Graphviz)
 
-## Script 
+## Script Synopses
 
 - `train.py`
 
@@ -37,21 +47,21 @@
 
 ## Results
 
-### Cure Beauty
+### Cure Beauty (Curated)
 
 ![Cure Beauty](examples/beauty.png)
 
-## Other Datasets
+## Other Dataset Results
 
-### MNIST
+### MNIST (Uncurated)
 
 ![MNIST](examples/mnist.png)
 
-### CIFAR-10
+### CIFAR-10 (Uncurated)
 
 ![CIFAR-10](examples/cifar-10.png)
 
-### Anime Face
+### Anime Face (Uncurated)
 
 ![Anime Face](examples/anime.png)
 
