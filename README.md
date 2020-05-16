@@ -9,6 +9,8 @@ Its output image resolutions grow progressively during training like PGGAN.
 This implementation supports 4x4 px (stage 1) to 1024x1024 px (stage 9) images.
 Most of the implementation follows the original paper, but we installed some enhancements.
 For instance, we implemented an alternate least-squares objective introduced in LSGAN.
+We trained the models with the images of Precure character faces.
+We also tested it with other common datasets.
 
 ## Requirements
 
