@@ -6,7 +6,7 @@ Yet another StyleGAN implementation we tried out the generation of Precure (Japa
 
 StyleGAN is a generative adversarial network introduced by NVIDIA researchers.
 Its output image resolutions grow progressively during training like PGGAN.
-This implementation supports 8px squared (stage 1) to 1024px squared (stage 9) images.
+This implementation supports 4x4 px (stage 1) to 1024x1024 px (stage 9) images.
 Most of the implementation follows the original paper, but we installed some enhancements.
 For instance, we implemented an alternate least-squares objective introduced in LSGAN.
 
