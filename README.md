@@ -27,25 +27,16 @@ We also tested it with other common datasets.
 
 ## Script Synopses
 
-- `train.py` trains StyleGAN.
-
-- `generate.py`
-
-  generate images of trained model
-
-- `animate.py`
-
-  make analogy animation
-
-- `visualize.py`
-
-  draw an example of computation graph (debug) (Pydot and Graphviz is required)
-  It takes no command arguments.
-  
-- `check.py`
-
-  analyze chainer environment
-  It takes no command arguments.
+- `train.py` trains the models of StyleGAN.
+  Use `-h` option for more details.
+- `generate.py` generates images from a trained model.
+  Use `-h` option for more details.
+- `animate.py` makes the animation of the analogy from a trained model.
+  Use `-h` option for more details.
+- `visualize.py` draws an example of computation graph for debug (Pydot and Graphviz are required).
+  It takes no command-line arguments.
+- `check.py` analyzes Chainer environment.
+  It takes no command-line arguments.
 
 ## Results
 
