@@ -33,9 +33,9 @@ We also tested it with other common datasets.
   Use `-h` option for more details.
 - `animate.py` makes the animation of the analogy from a trained model.
   Use `-h` option for more details.
-- `visualize.py` draws an example of computation graph for debug (Pydot and Graphviz are required).
+- `visualize.py` draws an example of a computation graph for debugging (Pydot and Graphviz are required).
   It takes no command-line arguments.
-- `check.py` analyzes Chainer environment.
+- `check.py` analyzes the Chainer environment.
   It takes no command-line arguments.
 
 ## Results
