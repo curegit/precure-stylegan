@@ -12,6 +12,11 @@ For instance, we implemented an alternate least-squares objective introduced in 
 We trained the models with the images of Precure character faces.
 We also tested it with other common datasets.
 
+## Todo
+
+- Write documentation
+- Make a script to mix styles
+
 ## Requirements
 
 - Python >= 3.6
