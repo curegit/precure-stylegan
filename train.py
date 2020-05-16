@@ -23,7 +23,7 @@ parser.add_argument("-j", "--no-netinfo", dest="noinfo", action="store_true", he
 parser.add_argument("-y", "--no-datetime", dest="nodate", action="store_true", help="don't add date time prefix to completed model files")
 parser.add_argument("-f", "--force", action="store_true", help="allow overwrite existing files")
 parser.add_argument("-w", "--wipe", action="store_true", help="")
-parser.add_argument("-r", "--result", "--directory", metavar="DEST", dest="result", default="result", help="destination directory for models, logs, middle images, and so on")
+parser.add_argument("-r", "--result", "--directory", metavar="DEST", dest="result", default="results", help="destination directory for models, logs, middle images, and so on")
 parser.add_argument("-g", "--generator", metavar="FILE", help="HDF5 file of serialized trained generator to load and retrain")
 parser.add_argument("-d", "--discriminator", metavar="FILE", help="HDF5 file of serialized trained discriminator to load and retrain")
 parser.add_argument("-o", "--optimizers", metavar="FILE", nargs=3, help="snapshot of optimizers of mapper, generator, and discriminator")
