@@ -16,6 +16,8 @@ We also tested it with other common datasets.
 
 - Write documentation
 - Make a script to mix styles
+- Try other Precure
+- Implement StyleGAN 2.0
 
 ## Requirements
 
