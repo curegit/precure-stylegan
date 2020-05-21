@@ -39,33 +39,34 @@ class ImageGenerator(Chain):
 
 	def __call__(self, w, stage, alpha=1.0, mix_w=None, mix_stage=None):
 		blend = 0 <= alpha < 1
+		ws = w + (w[-1:] * (stage - 1))[0:stage] if type(w) is list else [w] * stage
 		mix = mix_stage or (10 if mix_w is None or stage < 2 else randint(2, stage))
 		last, up = stage == 1, stage == 2 and blend
-		h1, rgb = self.s1(w if mix > 1 else mix_w, last, up)
+		h1, rgb = self.s1(ws[0] if mix > 1 else mix_w, last, up)
 		if last: return h1
 		last, up = stage == 2, stage == 3 and blend
-		h2, rgb = self.s2(h1, w if mix > 2 else mix_w, last, up, alpha, rgb)
+		h2, rgb = self.s2(h1, ws[1] if mix > 2 else mix_w, last, up, alpha, rgb)
 		if last: return h2
 		last, up = stage == 3, stage == 4 and blend
-		h3, rgb = self.s3(h2, w if mix > 3 else mix_w, last, up, alpha, rgb)
+		h3, rgb = self.s3(h2, ws[2] if mix > 3 else mix_w, last, up, alpha, rgb)
 		if last: return h3
 		last, up = stage == 4, stage == 5 and blend
-		h4, rgb = self.s4(h3, w if mix > 4 else mix_w, last, up, alpha, rgb)
+		h4, rgb = self.s4(h3, ws[3] if mix > 4 else mix_w, last, up, alpha, rgb)
 		if last: return h4
 		last, up = stage == 5, stage == 6 and blend
-		h5, rgb = self.s5(h4, w if mix > 5 else mix_w, last, up, alpha, rgb)
+		h5, rgb = self.s5(h4, ws[4] if mix > 5 else mix_w, last, up, alpha, rgb)
 		if last: return h5
 		last, up = stage == 6, stage == 7 and blend
-		h6, rgb = self.s6(h5, w if mix > 6 else mix_w, last, up, alpha, rgb)
+		h6, rgb = self.s6(h5, ws[5] if mix > 6 else mix_w, last, up, alpha, rgb)
 		if last: return h6
 		last, up = stage == 7, stage == 8 and blend
-		h7, rgb = self.s7(h6, w if mix > 7 else mix_w, last, up, alpha, rgb)
+		h7, rgb = self.s7(h6, ws[6] if mix > 7 else mix_w, last, up, alpha, rgb)
 		if last: return h7
 		last, up = stage == 8, stage == 9 and blend
-		h8, rgb = self.s8(h7, w if mix > 8 else mix_w, last, up, alpha, rgb)
+		h8, rgb = self.s8(h7, ws[7] if mix > 8 else mix_w, last, up, alpha, rgb)
 		if last: return h8
 		last, up = stage == 9, stage >= 10
-		h9, rgb = self.s9(h8, w if mix > 9 else mix_w, last, up, alpha, rgb)
+		h9, rgb = self.s9(h8, ws[8] if mix > 9 else mix_w, last, up, alpha, rgb)
 		if last: return h9
 		return rgb
 
@@ -82,10 +83,20 @@ class Generator(Chain):
 			self.generator = ImageGenerator(z_size, *channels, max_stage)
 
 	def __call__(self, z, stage, alpha=1.0, mix_z=None, mix_stage=None, psi=None, mean_w=None):
-		if psi is None:
-			return self.generator(self.mapper(z), stage, alpha, None if mix_z is None else self.mapper(mix_z), mix_stage)
+		if type(z) is list:
+			if psi is None:
+				zs = (z + z[-1:] * (stage - 1))[0:stage]
+				ws = [self.mapper(z) for z in zs]
+				return self.generator(ws, stage, alpha, None if mix_z is None else self.mapper(mix_z), mix_stage)
+			else:
+				zs = (z + z[-1:] * (stage - 1))[0:stage]
+				ws = [self.truncation_trick(self.mapper(z), psi, mean_w) for z in zs]
+				return self.generator(ws, stage, alpha, None if mix_z is None else self.truncation_trick(self.mapper(mix_z), psi, mean_w), mix_stage)
 		else:
-			return self.generator(self.truncation_trick(self.mapper(z), psi, mean_w), stage, alpha, None if mix_z is None else self.truncation_trick(self.mapper(mix_z), psi, mean_w), mix_stage)
+			if psi is None:
+				return self.generator(self.mapper(z), stage, alpha, None if mix_z is None else self.mapper(mix_z), mix_stage)
+			else:
+				return self.generator(self.truncation_trick(self.mapper(z), psi, mean_w), stage, alpha, None if mix_z is None else self.truncation_trick(self.mapper(mix_z), psi, mean_w), mix_stage)
 
 	def resolution(self, stage):
 		return (2 * 2 ** stage, 2 * 2 ** stage)
