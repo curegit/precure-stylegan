@@ -13,7 +13,9 @@ class Constant(Chain):
 			self.p = Parameter(One(), (channels, height, width))
 
 	def __call__(self, batch):
-		return broadcast_to(self.p, (batch, *self.p.shape))
+		const = broadcast_to(self.p, (batch, *self.p.shape))
+		const.unchain_backward()
+		return const
 
 # 2x upsample operation as link
 class Upsampler(Chain):
@@ -40,6 +42,7 @@ class NoiseAdder(Chain):
 
 	def generate_noises(self, batch, channels, height, width):
 		z = broadcast_to(self.z, (batch, 1, height, width))
+		z.unchain_backward()
 		return broadcast_to(gaussian(z, z), (batch, channels, height, width))
 
 # Learnable transform from W to style
