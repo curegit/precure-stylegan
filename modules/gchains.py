@@ -32,7 +32,7 @@ class NoiseAdder(Chain):
 		super().__init__()
 		with self.init_scope():
 			self.z = Parameter(Zero(), 1)
-			self.s = Scale(W_shape=(channels))
+			self.s = Scale(W_shape=channels)
 
 	def __call__(self, x):
 		n = self.generate_noises(*x.shape)
