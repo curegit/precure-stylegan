@@ -26,6 +26,7 @@ We also tested it with other common datasets.
 - Pillow >= 7.1
 - Numpy
 - H5py
+- Matplotlib
 
 ### Optional
 
