@@ -67,11 +67,21 @@ We also tested it with other common datasets.
 
 ## Bibliography
 
+### Papers
+
 - [Progressive Growing of GANs for Improved Quality, Stability, and Variation](https://arxiv.org/abs/1710.10196)
 - [A Style-Based Generator Architecture for Generative Adversarial Networks](https://arxiv.org/abs/1812.04948)
 - [Least Squares Generative Adversarial Networks](https://arxiv.org/abs/1611.04076)
+
+### Implementation used as reference
+
 - [Chainer implementation of Style-based Generator](https://github.com/pfnet-research/chainer-stylegan)
 - [Chainer-StyleBasedGAN](https://github.com/RUTILEA/Chainer-StyleBasedGAN)
+
+### Datasets for testing
+
+- [THE MNIST DATABASE of handwritten digits](http://yann.lecun.com/exdb/mnist/)
+- [CIFAR-10 and CIFAR-100 datasets](https://www.cs.toronto.edu/~kriz/cifar.html)
 - [Anime-Face-Dataset](https://github.com/Mckinsey666/Anime-Face-Dataset)
 
 ## License
