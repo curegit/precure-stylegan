@@ -69,7 +69,7 @@ mkdirp(args.directory)
 
 # Dump command-line options
 if args.dump_json:
-	path = filepath(args.directory, "args", "json")
+	path = filepath(args.directory, "args_quit" if args.quit else "args", "json")
 	path = path if args.force else altfilepath(path)
 	with open(path, mode="w", encoding="utf-8") as fp:
 		dump(vars(args), fp, indent=2, sort_keys=True)

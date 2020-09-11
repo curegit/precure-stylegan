@@ -126,7 +126,7 @@ if args.wipe:
 mkdirp(args.result)
 
 # Dump command-line options
-path = filepath(args.result, "args", "json")
+path = filepath(args.result, "args_quit" if args.quit else "args", "json")
 path = path if args.force else altfilepath(path)
 with open(path, mode="w", encoding="utf-8") as fp:
 	dump(vars(args), fp, indent=2, sort_keys=True)
