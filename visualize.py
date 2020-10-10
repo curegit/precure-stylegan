@@ -18,10 +18,10 @@ mix_stage = 2
 psi = 0.7
 
 # Graph style config
-gvarstyle = {"fillcolor": "#5edbf1", "shape": "record", "style": "filled"}
-gfuncstyle = {"fillcolor": "#ffa9e0", "shape": "record", "style": "filled"}
-dvarstyle = {"fillcolor": "#7a9fe6", "shape": "record", "style": "filled"}
-dfuncstyle = {"fillcolor": "#fea21d", "shape": "record", "style": "filled"}
+gvarstyle = { "fillcolor": "#5edbf1", "shape": "record", "style": "filled" }
+gfuncstyle = { "fillcolor": "#ffa9e0", "shape": "record", "style": "filled" }
+dvarstyle = { "fillcolor": "#7a9fe6", "shape": "record", "style": "filled" }
+dfuncstyle = { "fillcolor": "#fea21d", "shape": "record", "style": "filled" }
 
 # Destination config
 directory = "graphs"
