@@ -35,7 +35,7 @@ class ImageGenerator(Chain):
 			if max_stage >= 6: self.s6 = SynthesisNetwork(min(init_channel, final_channel * 2 ** (max_stage - 5)), min(init_channel, final_channel * 2 ** (max_stage - 6)), w_size)
 			if max_stage >= 7: self.s7 = SynthesisNetwork(min(init_channel, final_channel * 2 ** (max_stage - 6)), min(init_channel, final_channel * 2 ** (max_stage - 7)), w_size)
 			if max_stage >= 8: self.s8 = SynthesisNetwork(min(init_channel, final_channel * 2 ** (max_stage - 7)), min(init_channel, final_channel * 2 ** (max_stage - 8)), w_size)
-			if max_stage >= 9: self.s9 = SynthesisNetwork(min(init_channel, final_channel * 2 ** (max_stage - 8)), final_channel, w_size)
+			if max_stage >= 9: self.s9 = SynthesisNetwork(min(init_channel, final_channel * 2 ** (max_stage - 8)), min(init_channel, final_channel), w_size)
 
 	def __call__(self, w, stage, alpha=1.0, mix_w=None, mix_stage=None):
 		blend = 0 <= alpha < 1
@@ -129,7 +129,7 @@ class Discriminator(Chain):
 		with self.init_scope():
 			self.ds = Downsampler()
 			final_channel, init_channel = channels
-			if max_stage >= 9: self.d1 = DiscriminatorChain(init_channel, min(init_channel * 2 ** (max_stage - 8), final_channel))
+			if max_stage >= 9: self.d1 = DiscriminatorChain(min(init_channel, final_channel), min(init_channel * 2 ** (max_stage - 8), final_channel))
 			if max_stage >= 8: self.d2 = DiscriminatorChain(min(init_channel * 2 ** (max_stage - 8), final_channel), min(init_channel * 2 ** (max_stage - 7), final_channel))
 			if max_stage >= 7: self.d3 = DiscriminatorChain(min(init_channel * 2 ** (max_stage - 7), final_channel), min(init_channel * 2 ** (max_stage - 6), final_channel))
 			if max_stage >= 6: self.d4 = DiscriminatorChain(min(init_channel * 2 ** (max_stage - 6), final_channel), min(init_channel * 2 ** (max_stage - 5), final_channel))
