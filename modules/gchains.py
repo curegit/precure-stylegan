@@ -68,6 +68,15 @@ class AdaptiveInstanceNormalization(Chain):
 		sd = broadcast_to(sqrt(mean(e ** 2, axis=1, keepdims=True) + 1e-8), x.shape)
 		return s * e / sd + b
 
+# Pixelwise feature vector normalization
+class PixelwiseFeatureMapNormalization(Chain):
+
+	def __init__(self):
+		super().__init__()
+
+	def __call__(self, x):
+		return x / sqrt(mean(x ** 2, axis=1, keepdims=True) + 1e-8)
+
 # First block of image generator
 class InitialSynthesisNetwork(Chain):
 
@@ -76,11 +85,13 @@ class InitialSynthesisNetwork(Chain):
 		with self.init_scope():
 			self.p1 = Constant(in_channels, height, width)
 			self.n1 = NoiseAdder(in_channels)
+			self.f1 = PixelwiseFeatureMapNormalization()
 			self.a1 = StyleAffineTransform(w_size, in_channels)
 			self.i1 = AdaptiveInstanceNormalization()
 			self.c1 = EqualizedConvolution2D(in_channels, out_channels, ksize=3, stride=1, pad=1)
-			self.r1 = LeakyReluLink(0.2)
 			self.n2 = NoiseAdder(out_channels)
+			self.r1 = LeakyReluLink(0.2)
+			self.f2 = PixelwiseFeatureMapNormalization()
 			self.a2 = StyleAffineTransform(w_size, out_channels)
 			self.i2 = AdaptiveInstanceNormalization()
 			self.us = Upsampler()
@@ -89,17 +100,19 @@ class InitialSynthesisNetwork(Chain):
 	def __call__(self, w, last=False, upsample=False):
 		h1 = self.p1(w.shape[0])
 		h2 = self.n1(h1)
+		h3 = self.f1(h2)
 		ys1, yb1 = self.a1(w)
-		h3 = self.i1(h2, ys1, yb1)
-		h4 = self.c1(h3)
-		h5 = self.r1(h4)
+		h4 = self.i1(h3, ys1, yb1)
+		h5 = self.c1(h4)
 		h6 = self.n2(h5)
+		h7 = self.r1(h6)
+		h8 = self.f2(h7)
 		ys2, yb2 = self.a2(w)
-		h7 = self.i2(h6, ys2, yb2)
+		h9 = self.i2(h8, ys2, yb2)
 		if last:
-			return self.rgb(h7), None
+			return self.rgb(h9), None
 		else:
-			up = self.us(h7)
+			up = self.us(h9)
 			return up, self.rgb(up) if upsample else None
 
 # Tail blocks of image generator
@@ -109,13 +122,15 @@ class SynthesisNetwork(Chain):
 		super().__init__()
 		with self.init_scope():
 			self.c1 = EqualizedConvolution2D(in_channels, out_channels, ksize=3, stride=1, pad=1)
-			self.r1 = LeakyReluLink(0.2)
 			self.n1 = NoiseAdder(out_channels)
+			self.r1 = LeakyReluLink(0.2)
+			self.f1 = PixelwiseFeatureMapNormalization()
 			self.a1 = StyleAffineTransform(w_size, out_channels)
 			self.i1 = AdaptiveInstanceNormalization()
 			self.c2 = EqualizedConvolution2D(out_channels, out_channels, ksize=3, stride=1, pad=1)
-			self.r2 = LeakyReluLink(0.2)
 			self.n2 = NoiseAdder(out_channels)
+			self.r2 = LeakyReluLink(0.2)
+			self.f2 = PixelwiseFeatureMapNormalization()
 			self.a2 = StyleAffineTransform(w_size, out_channels)
 			self.i2 = AdaptiveInstanceNormalization()
 			self.us = Upsampler()
@@ -124,18 +139,20 @@ class SynthesisNetwork(Chain):
 
 	def __call__(self, x, w, last=False, upsample=False, alpha=1.0, blend=None):
 		h1 = self.c1(x)
-		h2 = self.r1(h1)
-		h3 = self.n1(h2)
+		h2 = self.n1(h1)
+		h3 = self.r1(h2)
+		h4 = self.f1(h3)
 		ys1, yb1 = self.a1(w)
-		h4 = self.i1(h3, ys1, yb1)
-		h5 = self.c2(h4)
-		h6 = self.r2(h5)
+		h5 = self.i1(h4, ys1, yb1)
+		h6 = self.c2(h5)
 		h7 = self.n2(h6)
+		h8 = self.r2(h7)
+		h9 = self.f2(h8)
 		ys2, yb2 = self.a2(w)
-		h8 = self.i2(h7, ys2, yb2)
+		h10 = self.i2(h9, ys2, yb2)
 		if last:
-			rgb = self.rgb(h8)
+			rgb = self.rgb(h10)
 			return rgb if blend is None else self.lb(blend, rgb, alpha), None
 		else:
-			up = self.us(h8)
+			up = self.us(h10)
 			return up, self.rgb(up) if upsample else None
