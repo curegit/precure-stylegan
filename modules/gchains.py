@@ -40,6 +40,7 @@ class NoiseAdder(Chain):
 
 	def generate_noises(self, batch, channels, height, width):
 		z = broadcast_to(self.z, (batch, 1, height, width))
+		z.unchain_backward()
 		return broadcast_to(gaussian(z, z), (batch, channels, height, width))
 
 # Learnable transform from W to style

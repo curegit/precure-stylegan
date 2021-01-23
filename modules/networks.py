@@ -104,6 +104,8 @@ class Generator(Chain):
 	def generate_latent(self, batch, center=None, sd=1.0):
 		zeros = broadcast_to(self.zero, (batch, self.z_size))
 		ones = broadcast_to(self.one, (batch, self.z_size))
+		zeros.unchain_backward()
+		ones.unchain_backward()
 		ln_var = log(sd ** 2) * ones
 		if center is None:
 			return gaussian(zeros, ln_var)
