@@ -5,7 +5,7 @@ from shutil import rmtree
 from datetime import datetime
 from argparse import ArgumentParser
 from chainer import optimizers, serializers, global_config
-from chainer.iterators import MultiprocessIterator
+from chainer.iterators import MultithreadIterator
 from chainer.training import Trainer, extensions, make_extension
 from modules.updater import StyleGanUpdater
 from modules.dataset import StyleGanDataset
@@ -67,7 +67,7 @@ n = dataset.length()
 if n < 1:
 	eprint("No image found in dataset directory")
 	exit(1)
-iterator = MultiprocessIterator(dataset, batch_size=args.batch, repeat=True, shuffle=True, n_prefetch=4)
+iterator = MultithreadIterator(dataset, batch_size=args.batch, repeat=True, shuffle=True, n_threads=args.batch)
 
 # Print information
 print(f"MLP: {args.size}x{args.depth}, Stage: {args.stage}/{args.maxstage} ({w}x{h})")
