@@ -1,7 +1,7 @@
 from math import sqrt
 from chainer import Chain, Link
 from chainer.links import Linear, Convolution2D
-from chainer.functions import leaky_relu
+from chainer.functions import leaky_relu, pad
 from chainer.initializers import Normal
 
 # Learning rate-equalized FC layer
@@ -19,14 +19,19 @@ class EqualizedLinear(Chain):
 # Learning rate-equalized convolution layer
 class EqualizedConvolution2D(Chain):
 
-	def __init__(self, in_channels, out_channels, ksize=3, stride=1, pad=0, nobias=False, initial_bias=None, gain=sqrt(2)):
+	def __init__(self, in_channels, out_channels, ksize=3, stride=1, pad=0, nobias=False, initial_bias=None, gain=sqrt(2), reflect=False):
 		super().__init__()
 		self.c = gain * sqrt(1 / (in_channels * ksize ** 2))
+		self.pad = pad
+		self.reflect = reflect
 		with self.init_scope():
-			self.conv = Convolution2D(in_channels, out_channels, ksize, stride, pad, nobias=nobias, initialW=Normal(1.0), initial_bias=initial_bias)
+			self.conv = Convolution2D(in_channels, out_channels, ksize, stride, 0 if reflect else pad, nobias=nobias, initialW=Normal(1.0), initial_bias=initial_bias)
 
 	def __call__(self, x):
-		return self.conv(self.c * x)
+		if self.reflect and self.pad > 0:
+			return self.conv(pad(self.c * x, ((0, 0), (0, 0), (self.pad, self.pad), (self.pad, self.pad)), mode="symmetric"))
+		else:
+			return self.conv(self.c * x)
 
 # Leaky ReLU activation function as link
 class LeakyReluLink(Link):

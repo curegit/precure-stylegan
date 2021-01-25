@@ -77,7 +77,7 @@ class InitialSynthesisNetwork(Chain):
 			self.n1 = NoiseAdder(in_channels)
 			self.a1 = StyleAffineTransform(w_size, in_channels)
 			self.i1 = AdaptiveInstanceNormalization()
-			self.c1 = EqualizedConvolution2D(in_channels, out_channels, ksize=3, stride=1, pad=1)
+			self.c1 = EqualizedConvolution2D(in_channels, out_channels, ksize=3, stride=1, pad=1, reflect=True)
 			self.r1 = LeakyReluLink(0.2)
 			self.n2 = NoiseAdder(out_channels)
 			self.a2 = StyleAffineTransform(w_size, out_channels)
@@ -107,12 +107,12 @@ class SynthesisNetwork(Chain):
 	def __init__(self, in_channels, out_channels, w_size):
 		super().__init__()
 		with self.init_scope():
-			self.c1 = EqualizedConvolution2D(in_channels, out_channels, ksize=3, stride=1, pad=1)
+			self.c1 = EqualizedConvolution2D(in_channels, out_channels, ksize=3, stride=1, pad=1, reflect=True)
 			self.r1 = LeakyReluLink(0.2)
 			self.n1 = NoiseAdder(out_channels)
 			self.a1 = StyleAffineTransform(w_size, out_channels)
 			self.i1 = AdaptiveInstanceNormalization()
-			self.c2 = EqualizedConvolution2D(out_channels, out_channels, ksize=3, stride=1, pad=1)
+			self.c2 = EqualizedConvolution2D(out_channels, out_channels, ksize=3, stride=1, pad=1, reflect=True)
 			self.r2 = LeakyReluLink(0.2)
 			self.n2 = NoiseAdder(out_channels)
 			self.a2 = StyleAffineTransform(w_size, out_channels)
