@@ -2,6 +2,35 @@ from chainer import Chain, Sequential
 from chainer.functions import mean, sqrt, concat, broadcast_to, flatten, resize_images
 from modules.links import EqualizedLinear, EqualizedConvolution2D, LeakyReluLink, LerpBlendLink
 
+import math
+import numpy as np
+from chainer import Link
+from chainer.functions import pad, convolution_2d, depth2space
+
+def sinc(x):
+	return math.sin(x * math.pi) / (x * math.pi)
+
+def lanczos(x, n):
+	return 0.0 if abs(x) > n else sinc(x) * sinc(x / n)
+
+class Downsampler(Link):
+
+	def __init__(self, n=3):
+		super().__init__()
+		ys = np.array([lanczos(i + 0.5, n) for i in range(-n, n)])
+		ys = ys / np.sum(ys)
+		k = ys.reshape(1, n * 2) * ys.reshape(n * 2, 1)
+		self.w = np.array([[k]], dtype=np.float32)
+		self.n = n
+
+	def __call__(self, x):
+		b, c, h, w = x.shape
+		p = self.n - 1
+		h1 = x.reshape(b * c, 1, h, w)
+		h2 = pad(h1, ((0, 0), (0, 0), (p, p), (p, p)), mode="symmetric")
+		h3 = convolution_2d(h2, self.xp.array(self.w))
+		return h3.reshape(b, c, h // 2, w // 2)
+
 # Link inserting a new channel of mini-batch standard deviation
 class MiniBatchStandardDeviation(Chain):
 
@@ -14,6 +43,7 @@ class MiniBatchStandardDeviation(Chain):
 		channel = broadcast_to(mean(sd), (x.shape[0], 1, x.shape[2], x.shape[3]))
 		return concat((x, channel), axis=1)
 
+'''
 # 1/2 downsample operation as link
 class Downsampler(Chain):
 
@@ -23,6 +53,7 @@ class Downsampler(Chain):
 	def __call__(self, x):
 		height, width = x.shape[2:]
 		return resize_images(x, (height // 2, width // 2), align_corners=False)
+'''
 
 # Head blocks of discriminator
 class DiscriminatorChain(Chain):
