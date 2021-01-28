@@ -1,7 +1,7 @@
 from math import sqrt
 from chainer import Parameter, Chain, Link
 from chainer.links import Linear, Convolution2D
-from chainer.functions import leaky_relu, pad, softmax, tensordot, vstack
+from chainer.functions import leaky_relu, pad, softmax, einsum
 from chainer.initializers import Normal, Zero
 
 # Learning rate-equalized FC layer
@@ -55,21 +55,26 @@ class LerpBlendLink(Link):
 		return (1 - t) * x + t * y
 
 def dot(a, b):
-	return vstack([tensordot(v1, v2, axes=(1, 0)) for v1, v2 in zip(a, b)])
+	return einsum("...ji,...ik->...jk", a, b)
 
-class SelfAttention(Link):
+class SelfAttention(Chain):
 
-	def __init__(self, channels):
+	def __init__(self, channels, inner=None):
 		super().__init__()
+		inner = channels if inner is None else inner
 		with self.init_scope():
+			self.f = Convolution2D(channels, inner, ksize=1, stride=1, pad=0, nobias=True)
+			self.g = Convolution2D(channels, inner, ksize=1, stride=1, pad=0, nobias=True)
+			self.h = Convolution2D(channels, inner, ksize=1, stride=1, pad=0, nobias=True)
+			self.v = Convolution2D(inner, channels, ksize=1, stride=1, pad=0, nobias=True)
 			self.r = Parameter(initializer=Zero(), shape=1)
 
 	def __call__(self, x):
 		b, c, h, w = x.shape
-		f = x.reshape(b, c, h * w)
-		g = x.reshape(b, c, h * w)
-		h = x.reshape(b, c, h * w)
+		f = self.f(x).reshape(b, c, h * w)
+		g = self.g(x).reshape(b, c, h * w)
+		t = self.h(x).reshape(b, c, h * w)
 		a = dot(f.transpose(0, 2, 1), g)
-		b = softmax(a, axis=2)
-		y = dot(h, b)
-		return x + self.r * y.reshape(b, c, h, w)
+		z = softmax(a, axis=2)
+		y = dot(t, z)
+		return x + self.r * self.v(y.reshape(b, c, h, w))
