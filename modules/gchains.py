@@ -2,7 +2,7 @@ from chainer import Parameter, Chain
 from chainer.links import Scale
 from chainer.functions import mean, sqrt, broadcast_to, resize_images, gaussian
 from chainer.initializers import Zero, One
-from modules.links import EqualizedLinear, EqualizedConvolution2D, LeakyReluLink, LerpBlendLink
+from modules.links import EqualizedLinear, EqualizedConvolution2D, LeakyReluLink, LerpBlendLink, SelfAttention
 
 # Link that returns constant value
 class Constant(Chain):
@@ -136,8 +136,10 @@ class SynthesisNetwork(Chain):
 			self.us = Upsampler()
 			self.lb = LerpBlendLink()
 			self.rgb = EqualizedConvolution2D(out_channels, 3, ksize=1, stride=1, pad=0, gain=1)
+			self.sa = SelfAttention(in_channels)
 
 	def __call__(self, x, w, last=False, upsample=False, alpha=1.0, blend=None):
+		x = self.sa(x)
 		h1 = self.c1(x)
 		h2 = self.n1(h1)
 		h3 = self.r1(h2)

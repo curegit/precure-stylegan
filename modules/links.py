@@ -1,8 +1,8 @@
 from math import sqrt
-from chainer import Chain, Link
+from chainer import Parameter, Chain, Link
 from chainer.links import Linear, Convolution2D
-from chainer.functions import leaky_relu, pad
-from chainer.initializers import Normal
+from chainer.functions import leaky_relu, pad, softmax, tensordot, vstack
+from chainer.initializers import Normal, Zero
 
 # Learning rate-equalized FC layer
 class EqualizedLinear(Chain):
@@ -53,3 +53,23 @@ class LerpBlendLink(Link):
 		if t <= 0: return x
 		if t >= 1: return y
 		return (1 - t) * x + t * y
+
+def dot(a, b):
+	return vstack([tensordot(v1, v2, axes=(1, 0)) for v1, v2 in zip(a, b)])
+
+class SelfAttention(Link):
+
+	def __init__(self, channels):
+		super().__init__()
+		with self.init_scope():
+			self.r = Parameter(initializer=Zero(), shape=1)
+
+	def __call__(self, x):
+		b, c, h, w = x.shape
+		f = x.reshape(b, c, h * w)
+		g = x.reshape(b, c, h * w)
+		h = x.reshape(b, c, h * w)
+		a = dot(f.transpose(0, 2, 1), g)
+		b = softmax(a, axis=2)
+		y = dot(h, b)
+		return x + self.r * y.reshape(b, c, h, w)

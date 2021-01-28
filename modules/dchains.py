@@ -1,6 +1,6 @@
 from chainer import Chain, Sequential
 from chainer.functions import mean, sqrt, concat, broadcast_to, flatten, resize_images
-from modules.links import EqualizedLinear, EqualizedConvolution2D, LeakyReluLink, LerpBlendLink
+from modules.links import EqualizedLinear, EqualizedConvolution2D, LeakyReluLink, LerpBlendLink, SelfAttention
 
 # Link inserting a new channel of mini-batch standard deviation
 class MiniBatchStandardDeviation(Chain):
@@ -37,10 +37,12 @@ class DiscriminatorChain(Chain):
 			self.r2 = LeakyReluLink(0.2)
 			self.ds = Downsampler()
 			self.lb = LerpBlendLink()
+			self.sa = SelfAttention(in_channels)
 
 	def __call__(self, x, first=False, alpha=1.0, blend=None):
 		h1 = self.rgb(x) if first else x
 		h2 = h1 if blend is None else self.lb(self.rgb(blend), h1, alpha)
+		h2 = self.sa(h2)
 		h3 = self.c1(h2)
 		h4 = self.r1(h3)
 		h5 = self.c2(h4)
