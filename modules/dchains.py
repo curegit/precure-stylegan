@@ -1,5 +1,5 @@
 from chainer import Chain, Sequential
-from chainer.functions import mean, sqrt, concat, broadcast_to, flatten, resize_images
+from chainer.functions import mean, sqrt, concat, broadcast_to, flatten, average_pooling_2d
 from modules.links import EqualizedLinear, EqualizedConvolution2D, LeakyReluLink, LerpBlendLink
 
 # Link inserting a new channel of mini-batch standard deviation
@@ -21,8 +21,7 @@ class Downsampler(Chain):
 		super().__init__()
 
 	def __call__(self, x):
-		height, width = x.shape[2:]
-		return resize_images(x, (height // 2, width // 2), align_corners=False)
+		return average_pooling_2d(x, ksize=2, stride=2, pad=0)
 
 # Head blocks of discriminator
 class DiscriminatorChain(Chain):
