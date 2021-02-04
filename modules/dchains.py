@@ -2,11 +2,8 @@ from chainer import Chain, Sequential
 from chainer.functions import mean, sqrt, concat, broadcast_to, flatten, average_pooling_2d
 from modules.links import EqualizedLinear, EqualizedConvolution2D, LeakyReluLink, LerpBlendLink
 
-# Link inserting a new channel of mini-batch standard deviation
+# Mini-batch standard deviation layer
 class MiniBatchStandardDeviation(Chain):
-
-	def __init__(self):
-		super().__init__()
 
 	def __call__(self, x):
 		m = mean(x, axis=0, keepdims=True)
@@ -14,16 +11,13 @@ class MiniBatchStandardDeviation(Chain):
 		channel = broadcast_to(mean(sd), (x.shape[0], 1, x.shape[2], x.shape[3]))
 		return concat((x, channel), axis=1)
 
-# 1/2 downsample operation as link
+# Downsampling layer
 class Downsampler(Chain):
-
-	def __init__(self):
-		super().__init__()
 
 	def __call__(self, x):
 		return average_pooling_2d(x, ksize=2, stride=2, pad=0)
 
-# Head blocks of discriminator
+# First or middle block of the discriminator
 class DiscriminatorChain(Chain):
 
 	def __init__(self, in_channels, out_channels):
@@ -46,7 +40,7 @@ class DiscriminatorChain(Chain):
 		h6 = self.r2(h5)
 		return self.ds(h6)
 
-# Last block of discriminator
+# Last block of the discriminator
 class FinalDiscriminatorChain(Chain):
 
 	def __init__(self, in_channels):
