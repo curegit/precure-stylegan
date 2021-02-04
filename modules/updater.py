@@ -25,7 +25,7 @@ class StyleGanUpdater(StandardUpdater):
 		batch = self.get_iterator("main").next()
 		batchsize = len(batch)
 
-		# Train discriminator
+		# Train the discriminator
 		x_real = self.discriminator.wrap_array(batch)
 		y_real = self.discriminator(x_real, self.stage, self.alpha)
 		gradient = grad([y_real], [x_real], enable_double_backprop=True)[0]
@@ -42,7 +42,7 @@ class StyleGanUpdater(StandardUpdater):
 		loss_dis.backward()
 		self.discriminator_optimizer.update()
 
-		# Train generator
+		# Train the generator
 		z = self.generator.generate_latent(batchsize)
 		mix_z = self.generator.generate_latent(batchsize) if self.mixing > random() else None
 		x_fake = self.generator(z, self.stage, self.alpha, mix_z)
