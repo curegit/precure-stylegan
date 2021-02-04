@@ -4,7 +4,7 @@ from chainer.functions import mean, sqrt, broadcast_to, resize_images, gaussian
 from chainer.initializers import Zero, One
 from modules.links import EqualizedLinear, EqualizedConvolution2D, LeakyReluLink, LerpBlendLink
 
-# Link that returns constant value
+# Layer that returns learned constant maps
 class Constant(Chain):
 
 	def __init__(self, channels, height, width):
@@ -15,11 +15,8 @@ class Constant(Chain):
 	def __call__(self, batch):
 		return broadcast_to(self.p, (batch, *self.p.shape))
 
-# 2x upsample operation as link
+# Upsampling layer
 class Upsampler(Chain):
-
-	def __init__(self):
-		super().__init__()
 
 	def __call__(self, x):
 		height, width = x.shape[2:]
@@ -43,7 +40,7 @@ class NoiseAdder(Chain):
 		z.unchain_backward()
 		return broadcast_to(gaussian(z, z), (batch, channels, height, width))
 
-# Learnable transform from W to style
+# Affine transformation layer from mapped latents to styles
 class StyleAffineTransform(Chain):
 
 	def __init__(self, in_size, out_size):
@@ -55,11 +52,8 @@ class StyleAffineTransform(Chain):
 	def __call__(self, w):
 		return self.s(w), self.b(w)
 
-# AdaIN layer for applying style
+# AdaIN layer that applies styles to feature maps
 class AdaptiveInstanceNormalization(Chain):
-
-	def __init__(self):
-		super().__init__()
 
 	def __call__(self, x, ys, yb):
 		s = broadcast_to(ys.reshape(ys.shape + (1, 1)), ys.shape + x.shape[2:])
@@ -68,16 +62,13 @@ class AdaptiveInstanceNormalization(Chain):
 		sd = broadcast_to(sqrt(mean(e ** 2, axis=1, keepdims=True) + 1e-8), x.shape)
 		return s * e / sd + b
 
-# Pixelwise feature vector normalization
+# Pixelwise feature map normalization layer
 class PixelwiseFeatureMapNormalization(Chain):
-
-	def __init__(self):
-		super().__init__()
 
 	def __call__(self, x):
 		return x / sqrt(mean(x ** 2, axis=1, keepdims=True) + 1e-8)
 
-# First block of image generator
+# First block of the image generator
 class InitialSynthesisNetwork(Chain):
 
 	def __init__(self, in_channels, out_channels, w_size, height, width):
@@ -115,7 +106,7 @@ class InitialSynthesisNetwork(Chain):
 			up = self.us(h9)
 			return up, self.rgb(up) if upsample else None
 
-# Tail blocks of image generator
+# Middle or last block of the image generator
 class SynthesisNetwork(Chain):
 
 	def __init__(self, in_channels, out_channels, w_size):
