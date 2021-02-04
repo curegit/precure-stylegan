@@ -7,7 +7,7 @@ from modules.links import EqualizedLinear, LeakyReluLink
 from modules.gchains import InitialSynthesisNetwork, SynthesisNetwork
 from modules.dchains import DiscriminatorChain, FinalDiscriminatorChain, Downsampler
 
-# Feature mapping network
+# Latent mapping network
 class FeatureMapper(Chain):
 
 	def __init__(self, size, depth):
@@ -70,7 +70,7 @@ class ImageGenerator(Chain):
 		if last: return h9
 		return rgb
 
-# Generator network
+# Generator's network
 class Generator(Chain):
 
 	def __init__(self, z_size=512, depth=8, channels=(512, 16), max_stage=9):
@@ -123,7 +123,7 @@ class Generator(Chain):
 	def wrap_latent(self, array):
 		return Variable(self.xp.array(array))
 
-# Discriminator network
+# Discriminator's network
 class Discriminator(Chain):
 
 	def __init__(self, channels=(512, 16), max_stage=9):
