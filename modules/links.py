@@ -1,10 +1,10 @@
 from math import sqrt
-from chainer import Chain, Link
+from chainer import Link, Chain
 from chainer.links import Linear, Convolution2D
 from chainer.functions import leaky_relu, pad
 from chainer.initializers import Normal
 
-# Learning rate-equalized FC layer
+# Learning rate-equalized dense layer
 class EqualizedLinear(Chain):
 
 	def __init__(self, in_size, out_size=None, initial_bias=None, gain=sqrt(2)):
@@ -16,7 +16,7 @@ class EqualizedLinear(Chain):
 	def __call__(self, x):
 		return self.linear(self.c * x)
 
-# Learning rate-equalized convolution layer
+# Learning rate-equalized two-dimensional convolution layer
 class EqualizedConvolution2D(Chain):
 
 	def __init__(self, in_channels, out_channels, ksize=3, stride=1, pad=0, nobias=False, initial_bias=None, gain=sqrt(2), reflect=False):
@@ -33,7 +33,7 @@ class EqualizedConvolution2D(Chain):
 		else:
 			return self.conv(self.c * x)
 
-# Leaky ReLU activation function as link
+# Leaky ReLU activation layer
 class LeakyReluLink(Link):
 
 	def __init__(self, a):
@@ -43,13 +43,10 @@ class LeakyReluLink(Link):
 	def __call__(self, x):
 		return leaky_relu(x, self.a)
 
-# Clamped linear interpolation for array
+# Clamped linear interpolation layer
 class LerpBlendLink(Link):
 
-	def __init__(self):
-		super().__init__()
-
 	def __call__(self, x, y, t):
-		if t <= 0: return x
-		if t >= 1: return y
+		if t < 0: return x
+		if t > 1: return y
 		return (1 - t) * x + t * y
