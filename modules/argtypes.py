@@ -1,48 +1,48 @@
 from sys import float_info
 from os.path import basename
 
-# 非負整数を受け入れる変換関数
+# Converter to non-negative integer
 def uint(str):
 	value = int(str)
 	if value >= 0:
 		return value
 	raise ValueError()
 
-# 正の整数を受け入れる変換関数
+# Converter to positive integer
 def natural(str):
 	value = int(str)
 	if value > 0:
 		return value
 	raise ValueError()
 
-# 非負実数を受け入れる変換関数
+# Converter to non-negative decimal
 def ufloat(str):
 	value = float(str)
 	if value >= 0:
 		return value
 	raise ValueError()
 
-# 正の実数を受け入れる変換関数
+# Converter to positive decimal
 def positive(str):
 	value = float(str)
 	if value >= float_info.epsilon:
 		return value
 	raise ValueError()
 
-# 0-1 の実数を受け入れる変換関数
+# Converter to decimal in the range 0-1
 def rate(str):
 	value = float(str)
 	if 0 <= value <= 1:
 		return value
 	raise ValueError()
 
-# ファイル名を受け入れる変換関数
+# Type checker for filenames
 def filename(str):
 	if str == basename(str):
 		return str
 	raise ValueError()
 
-# デバイス ID またはデバイス種別の文字列を受け入れる変換関数
+# Converter to CUDA device ID
 def device(str):
 	value = str.lower()
 	if value == "cpu":
