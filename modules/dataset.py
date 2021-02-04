@@ -3,7 +3,7 @@ from os.path import isfile
 from chainer.dataset import DatasetMixin
 from modules.utilities import load_image, filepath
 
-# Dataset definition for StyleGAN
+# Dataset abstraction of images in a folder and its subfolders
 class StyleGanDataset(DatasetMixin):
 
 	def __init__(self, directory, size, preload=False):
@@ -14,7 +14,7 @@ class StyleGanDataset(DatasetMixin):
 		for e in ["png", "jpg", "jpeg", "gif", "bmp", "tif", "tiff"]:
 			self.images += [f for f in glob(filepath(directory, "**/*", e), recursive=True) if isfile(f)]
 		if preload:
-			self.arraylist = [load_image(i, size) for i in self.images]
+			self.arrays = [load_image(i, size) for i in self.images]
 
 	def __len__(self):
 		return len(self.images)
@@ -23,4 +23,4 @@ class StyleGanDataset(DatasetMixin):
 		return self.__len__()
 
 	def get_example(self, index):
-		return self.arraylist[index] if self.preload else load_image(self.images[index], self.size)
+		return self.arrays[index] if self.preload else load_image(self.images[index], self.size)
