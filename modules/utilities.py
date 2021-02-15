@@ -11,7 +11,7 @@ def eprint(*args, **kwargs):
 
 # Wrapper function to do `mkdir -p`
 def mkdirp(path):
-	os.makedirs(path, exist_ok=True)
+	os.makedirs(os.path.normpath(path), exist_ok=True)
 
 # Build a file path from a directory path, filename and extension
 def filepath(dirpath, filename, ext):
