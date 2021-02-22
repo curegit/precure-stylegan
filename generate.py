@@ -16,7 +16,7 @@ parser.add_argument("-i", "--image-only", action="store_true", help="")
 parser.add_argument("-r", "--result", "-d", "--directory", metavar="DEST", dest="directory", default="images", help="destination directory for generated images")
 parser.add_argument("-p", "--prefix", type=filename, default="", help="filename prefix for generated images")
 parser.add_argument("-g", "--generator", metavar="FILE", help="HDF5 file of serialized trained model to load")
-parser.add_argument("-s", "--stage", type=int, choices=[1, 2, 3, 4, 5, 6, 7, 8, 9], default=7, help="growth stage, defining image resolution")
+parser.add_argument("-s", "--stage", type=int, choices=[1, 2, 3, 4, 5, 6, 7, 8, 9], help="growth stage, defining image resolution")
 parser.add_argument("-x", "--max-stage", dest="maxstage", type=int, choices=[1, 2, 3, 4, 5, 6, 7, 8, 9], default=7, help="final stage")
 parser.add_argument("-c", "--channels", metavar="CH", type=natural, nargs=2, default=(512, 16), help="numbers of channels at initial stage and final stage")
 parser.add_argument("-z", "--z-size", dest="size", type=natural, default=512, help="latent vector (feature vector) size")
@@ -40,7 +40,7 @@ print("Initializing model")
 generator = Generator(args.size, args.depth, args.channels, args.maxstage)
 
 # Print information
-args.stage = args.maxstage if args.stage > args.maxstage else args.stage
+args.stage = args.maxstage if not args.stage or args.stage > args.maxstage else args.stage
 h, w = generator.resolution(args.stage)
 print(f"Total Generation: {args.number}, Batch: {args.batch}")
 print(f"MLP: {args.size}x{args.depth}, Stage: {args.stage}/{args.maxstage} ({w}x{h})")
