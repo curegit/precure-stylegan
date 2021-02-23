@@ -54,12 +54,12 @@ global_config.autotune = True
 global_config.cudnn_deterministic = False
 
 # Init models
-print("Initializing models")
+print("Initializing models...")
 generator = Generator(args.size, args.depth, args.channels, args.maxstage)
 discriminator = Discriminator(args.channels, args.maxstage)
 
 # Prepare dataset
-print("Loading dataset" if args.preload else "Scanning dataset")
+print("Loading dataset..." if args.preload else "Scanning dataset...")
 args.stage = args.maxstage if args.stage > args.maxstage else args.stage
 h, w = generator.resolution(args.stage)
 dataset = StyleGanDataset(args.dataset, (w, h), args.preload)
@@ -78,20 +78,20 @@ print(f"Objective: {'Least Squares' if args.lsgan else 'Adversarial'}, Gamma: {a
 
 # Load models
 if args.generator is not None:
-	print("Loading generator")
+	print("Loading generator...")
 	serializers.load_hdf5(args.generator, generator)
 if args.discriminator is not None:
-	print("Loading discriminator")
+	print("Loading discriminator...")
 	serializers.load_hdf5(args.discriminator, discriminator)
 
 # GPU setting
 if args.device >= 0:
-	print("Converting to GPU")
+	print("Converting to GPU...")
 	generator.to_gpu(args.device)
 	discriminator.to_gpu(args.device)
 
 # Init optimizers
-print("Initializing optimizers")
+print("Initializing optimizers...")
 if args.sgd is None:
 	mapper_optimizer = optimizers.Adam(alpha=args.adam_alphas[0], beta1=args.adam_betas[0], beta2=args.adam_betas[1], eps=1e-08).setup(generator.mapper)
 	print(f"Mapper: Adam(alpha: {args.adam_alphas[0]}, beta1: {args.adam_betas[0]}, beta2: {args.adam_betas[1]})")
@@ -109,18 +109,18 @@ else:
 
 # Load optimizers
 if args.optimizers is not None:
-	print("Loading mapper's optimizer")
+	print("Loading mapper's optimizer...")
 	serializers.load_hdf5(args.optimizers[0], mapper_optimizer)
-	print("Loading generator's optimizer")
+	print("Loading generator's optimizer...")
 	serializers.load_hdf5(args.optimizers[1], generator_optimizer)
-	print("Loading discriminator's optimizer")
+	print("Loading discriminator's optimizer...")
 	serializers.load_hdf5(args.optimizers[2], discriminator_optimizer)
 
 # Prepare updater
 updater = StyleGanUpdater(generator, discriminator, iterator, {"mapper": mapper_optimizer, "generator": generator_optimizer, "discriminator": discriminator_optimizer}, args.device, args.stage, args.mix, args.alpha, args.delta, args.gamma, args.lsgan)
 
 # Init result directory
-print("Initializing destination directory")
+print("Initializing destination directory...")
 if args.wipe:
 	rmtree(args.result, ignore_errors=True)
 mkdirp(args.result)
@@ -210,7 +210,7 @@ if args.quit:
 trainer.run()
 
 # Save models
-print("Saving models")
+print("Saving models...")
 generator.to_cpu()
 discriminator.to_cpu()
 n = f"s{args.stage}x{args.maxstage}c{args.channels[0]}-{args.channels[1]}z{args.size}m{args.depth}"
@@ -227,7 +227,7 @@ serializers.save_hdf5(dpath, discriminator)
 print(f"Discriminator: saved as {dpath}")
 
 # Save optimizers
-print("Saving optimizers")
+print("Saving optimizers...")
 omname = f"mopt{'' if args.noinfo else f'_{n}'}{'' if args.nodate else f'_{t}'}"
 ogname = f"gopt{'' if args.noinfo else f'_{n}'}{'' if args.nodate else f'_{t}'}"
 odname = f"dopt{'' if args.noinfo else f'_{n}'}{'' if args.nodate else f'_{t}'}"

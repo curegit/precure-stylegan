@@ -1,5 +1,5 @@
-from glob import glob
-from os.path import isfile
+from glob import glob, escape
+from os.path import isfile, join
 from chainer.dataset import DatasetMixin
 from modules.utilities import load_image, filepath
 
@@ -12,7 +12,8 @@ class StyleGanDataset(DatasetMixin):
 		self.preload = preload
 		self.images = []
 		for e in ["png", "jpg", "jpeg", "gif", "bmp", "tif", "tiff"]:
-			self.images += [f for f in glob(filepath(directory, "**/*", e), recursive=True) if isfile(f)]
+			pattern = filepath(escape(directory), join("**", "*"), e)
+			self.images += [f for f in glob(pattern, recursive=True) if isfile(f)]
 		if preload:
 			self.arrays = [load_image(i, size) for i in self.images]
 
