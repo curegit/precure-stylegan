@@ -16,6 +16,7 @@ class StyleGanUpdater(StandardUpdater):
 		self.stage = stage
 		self.mixing = mixing
 		self.generator = generator
+		self.averaged_generator = generator.copy("copy")
 		self.discriminator = discriminator
 		self.mapper_optimizer = optimizers["mapper"]
 		self.generator_optimizer = optimizers["generator"]
@@ -52,6 +53,8 @@ class StyleGanUpdater(StandardUpdater):
 		loss_gen.backward()
 		self.mapper_optimizer.update()
 		self.generator_optimizer.update()
+		for p, q in zip(self.generator.params(), self.averaged_generator.params()):
+			q.copydata(0.001 * p + 0.999 * q)
 
 		report({"alpha": self.alpha})
 		report({"loss (gen)": loss_gen})

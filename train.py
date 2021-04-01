@@ -225,6 +225,7 @@ serializers.save_hdf5(gpath, generator)
 print(f"Generator: saved as {gpath}")
 serializers.save_hdf5(dpath, discriminator)
 print(f"Discriminator: saved as {dpath}")
+serializers.save_hdf5(f"av.hdf5", updater.averaged_generator)
 
 # Save optimizers
 print("Saving optimizers...")
