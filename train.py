@@ -25,6 +25,7 @@ parser.add_argument("-f", "--force", action="store_true", help="allow overwrite 
 parser.add_argument("-w", "--wipe", action="store_true", help="")
 parser.add_argument("-r", "--result", "--directory", metavar="DEST", dest="result", default="results", help="destination directory for models, logs, middle images, and so on")
 parser.add_argument("-g", "--generator", metavar="FILE", help="HDF5 file of serialized trained generator to load and retrain")
+parser.add_argument("-G", "--averaged-generator", metavar="FILE", dest="averaged", help="")
 parser.add_argument("-d", "--discriminator", metavar="FILE", help="HDF5 file of serialized trained discriminator to load and retrain")
 parser.add_argument("-o", "--optimizers", metavar="FILE", nargs=3, help="snapshot of optimizers of mapper, generator, and discriminator")
 parser.add_argument("-s", "--stage", type=int, choices=[1, 2, 3, 4, 5, 6, 7, 8, 9], default=1, help="growth stage to train")
@@ -37,7 +38,8 @@ parser.add_argument("-b", "--batch", type=natural, default=16, help="batch size,
 parser.add_argument("-e", "--epoch", type=natural, default=1, help="")
 parser.add_argument("-a", "--alpha", type=rate, default=0.0, help="")
 parser.add_argument("-t", "--delta", type=positive, default=0.00005, help="")
-parser.add_argument("-G", "--gamma", "--l2-batch", dest="gamma", type=ufloat, default=10, help="")
+parser.add_argument("-R", "--gamma", "--r1-gamma", dest="gamma", type=ufloat, default=10, help="")
+parser.add_argument("-D", "--decay", type=rate, default=0.999, help="")
 parser.add_argument("-L", "--lsgan", "--least-squares", action="store_true", help="")
 parser.add_argument("-i", "--style-mixing", metavar="RATE", dest="mix", type=rate, default=0.5, help="")
 parser.add_argument("-S", "--sgd", metavar="LR", type=positive, nargs=3, help="")
@@ -72,7 +74,7 @@ iterator = SerialIterator(dataset, batch_size=args.batch, repeat=True, shuffle=T
 # Print information
 print(f"MLP: {args.size}x{args.depth}, Stage: {args.stage}/{args.maxstage} ({w}x{h})")
 print(f"Channel: {args.channels[0]} (initial) -> {args.channels[1]} (final)")
-print(f"Epoch: {args.epoch}, Batch: {args.batch}, Dataset Images: {n}")
+print(f"Epoch: {args.epoch}, Batch: {args.batch}, EMA Decay: {args.decay}, Dataset Images: {n}")
 print(f"Mixing Rate: {args.mix * 100}%, Initial Alpha: {args.alpha}, Delta: {args.delta} (/iter)")
 print(f"Objective: {'Least Squares' if args.lsgan else 'Adversarial'}, Gamma: {args.gamma}, Device: {'CPU' if args.device < 0 else f'GPU {args.device}'}")
 
@@ -84,10 +86,17 @@ if args.discriminator is not None:
 	print("Loading discriminator...")
 	serializers.load_hdf5(args.discriminator, discriminator)
 
+#
+averaged_generator = generator.copy("copy")
+if args.averaged is not None:
+	print("Loading averaged generator...")
+	serializers.load_hdf5(args.averaged, averaged_generator)
+
 # GPU setting
 if args.device >= 0:
 	print("Converting to GPU...")
 	generator.to_gpu(args.device)
+	averaged_generator.to_gpu(args.device)
 	discriminator.to_gpu(args.device)
 
 # Init optimizers
@@ -117,7 +126,7 @@ if args.optimizers is not None:
 	serializers.load_hdf5(args.optimizers[2], discriminator_optimizer)
 
 # Prepare updater
-updater = StyleGanUpdater(generator, discriminator, iterator, {"mapper": mapper_optimizer, "generator": generator_optimizer, "discriminator": discriminator_optimizer}, args.device, args.stage, args.mix, args.alpha, args.delta, args.gamma, args.lsgan)
+updater = StyleGanUpdater(generator, averaged_generator, discriminator, iterator, {"mapper": mapper_optimizer, "generator": generator_optimizer, "discriminator": discriminator_optimizer}, args.device, args.stage, args.mix, args.alpha, args.delta, args.gamma, args.decay, args.lsgan)
 
 # Init result directory
 print("Initializing destination directory...")
@@ -156,19 +165,24 @@ def save_middle_images(generator, stage, directory, number, batch, mix, force=Tr
 	return func
 
 # Define extension to save models in progress
-def save_middle_models(generator, discriminator, stage, directory, device, force=True):
+def save_middle_models(generator, averaged_generator, discriminator, stage, directory, device, force=True):
 	@make_extension()
 	def func(trainer):
 		generator.to_cpu()
+		averaged_generator.to_cpu()
 		discriminator.to_cpu()
 		path = filepath(directory, f"gen_{stage}_{trainer.updater.iteration}", "hdf5")
 		path = path if force else altfilepath(path)
 		serializers.save_hdf5(path, generator)
+		path = filepath(directory, f"avgen_{stage}_{trainer.updater.iteration}", "hdf5")
+		path = path if force else altfilepath(path)
+		serializers.save_hdf5(path, averaged_generator)
 		path = filepath(directory, f"dis_{stage}_{trainer.updater.iteration}", "hdf5")
 		path = path if force else altfilepath(path)
 		serializers.save_hdf5(path, discriminator)
 		if device >= 0:
 			generator.to_gpu(device)
+			averaged_generator.to_gpu(device)
 			discriminator.to_gpu(device)
 	return func
 
@@ -195,8 +209,8 @@ plotname = basename(plotpath if args.force else altfilepath(plotpath))
 trainer = Trainer(updater, (args.epoch, "epoch"), out=args.result)
 if args.print[0] > 0: trainer.extend(extensions.ProgressBar(update_interval=args.print[0]))
 if args.print[1] > 0: trainer.extend(extensions.PrintReport(["epoch", "iteration", "alpha", "loss (gen)", "loss (dis)", "loss (grad)"], extensions.LogReport(trigger=(args.print[1], "iteration"), log_name=None)))
-if args.write[0] > 0: trainer.extend(save_middle_images(generator, args.stage, args.result, args.number, args.batch, args.mix, args.force), trigger=(args.write[0], "iteration"))
-if args.write[1] > 0: trainer.extend(save_middle_models(generator, discriminator, args.stage, args.result, args.device, args.force), trigger=(args.write[1], "iteration"))
+if args.write[0] > 0: trainer.extend(save_middle_images(averaged_generator, args.stage, args.result, args.number, args.batch, args.mix, args.force), trigger=(args.write[0], "iteration"))
+if args.write[1] > 0: trainer.extend(save_middle_models(generator, averaged_generator, discriminator, args.stage, args.result, args.device, args.force), trigger=(args.write[1], "iteration"))
 if args.write[1] > 0: trainer.extend(save_middle_optimizers(mapper_optimizer, generator_optimizer, discriminator_optimizer, args.stage, args.result, args.force), trigger=(args.write[1], "iteration"))
 if args.write[2] > 0: trainer.extend(extensions.LogReport(trigger=(args.write[2], "iteration"), filename=logname))
 if args.write[3] > 0: trainer.extend(extensions.PlotReport(["alpha", "loss (gen)", "loss (dis)", "loss (grad)"], "iteration", trigger=(args.write[3], "iteration"), filename=plotname))
@@ -212,20 +226,25 @@ trainer.run()
 # Save models
 print("Saving models...")
 generator.to_cpu()
+averaged_generator.to_cpu()
 discriminator.to_cpu()
 n = f"s{args.stage}x{args.maxstage}c{args.channels[0]}-{args.channels[1]}z{args.size}m{args.depth}"
 t = datetime.now().strftime("%m%d%H")
 gname = f"gen{'' if args.noinfo else f'_{n}'}{'' if args.nodate else f'_{t}'}"
+avname = f"avgen{'' if args.noinfo else f'_{n}'}{'' if args.nodate else f'_{t}'}"
 dname = f"dis{'' if args.noinfo else f'_{n}'}{'' if args.nodate else f'_{t}'}"
 gpath = filepath("." if args.current else args.result, gname, "hdf5")
+avpath = filepath("." if args.current else args.result, avname, "hdf5")
 dpath = filepath("." if args.current else args.result, dname, "hdf5")
 gpath = gpath if args.force else altfilepath(gpath)
+avpath = avpath if args.force else altfilepath(avpath)
 dpath = dpath if args.force else altfilepath(dpath)
 serializers.save_hdf5(gpath, generator)
 print(f"Generator: saved as {gpath}")
+serializers.save_hdf5(avpath, averaged_generator)
+print(f"Averaged Generator: saved as {avpath}")
 serializers.save_hdf5(dpath, discriminator)
 print(f"Discriminator: saved as {dpath}")
-serializers.save_hdf5(f"av.hdf5", updater.averaged_generator)
 
 # Save optimizers
 print("Saving optimizers...")

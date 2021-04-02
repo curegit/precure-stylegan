@@ -7,16 +7,17 @@ from chainer.functions import sum, batch_l2_norm_squared, softplus
 # Updater for StyleGAN
 class StyleGanUpdater(StandardUpdater):
 
-	def __init__(self, generator, discriminator, iterator, optimizers, device, stage, mixing=0.5, alpha=0.0, delta=0.00005, gamma=10, lsgan=False):
+	def __init__(self, generator, averaged_generator, discriminator, iterator, optimizers, device, stage, mixing=0.5, alpha=0.0, delta=0.00005, gamma=10, decay=0.999, lsgan=False):
 		super().__init__(iterator, optimizers, device=device)
 		self.alpha = alpha
 		self.delta = delta
 		self.gamma = gamma
+		self.decay = decay
 		self.lsgan = lsgan
 		self.stage = stage
 		self.mixing = mixing
 		self.generator = generator
-		self.averaged_generator = generator.copy("copy")
+		self.averaged_generator = averaged_generator
 		self.discriminator = discriminator
 		self.mapper_optimizer = optimizers["mapper"]
 		self.generator_optimizer = optimizers["generator"]
@@ -53,8 +54,8 @@ class StyleGanUpdater(StandardUpdater):
 		loss_gen.backward()
 		self.mapper_optimizer.update()
 		self.generator_optimizer.update()
-		for p, q in zip(self.generator.params(), self.averaged_generator.params()):
-			q.copydata(0.001 * p + 0.999 * q)
+		for raw, averaged in zip(self.generator.params(), self.averaged_generator.params()):
+			averaged.copydata((1 - self.decay) * raw + self.decay * averaged)
 
 		report({"alpha": self.alpha})
 		report({"loss (gen)": loss_gen})
