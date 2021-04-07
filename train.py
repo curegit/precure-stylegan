@@ -44,7 +44,7 @@ parser.add_argument("-L", "--lsgan", "--least-squares", action="store_true", hel
 parser.add_argument("-i", "--style-mixing", metavar="RATE", dest="mix", type=rate, default=0.5, help="")
 parser.add_argument("-S", "--sgd", metavar="LR", type=positive, nargs=3, help="")
 parser.add_argument("-A", "--adam-alphas", metavar="ALPHA", type=positive, nargs=3, default=(0.00001, 0.001, 0.001), help="Adam's coefficients of learning rates of mapper, generator, and discriminator")
-parser.add_argument("-B", "--adam-betas", metavar="BETA", type=rate, nargs=2, default=(0.0, 0.99), help="Adam's exponential decay rates of the 1st and 2nd order moments")
+parser.add_argument("-B", "--adam-betas", metavar=("BETA1", "BETA2"), type=rate, nargs=2, default=(0.0, 0.99), help="Adam's exponential decay rates of the 1st and 2nd order moments")
 parser.add_argument("-u", "--print-interval", metavar="ITER", dest="print", type=uint, nargs=2, default=(5, 500), help="")
 parser.add_argument("-l", "--write-interval", metavar="ITER", dest="write", type=uint, nargs=4, default=(1000, 3000, 500, 500), help="")
 parser.add_argument("-v", "--device", "--gpu", metavar="ID", dest="device", type=device, default=-1, help="use specified GPU or CPU device")
