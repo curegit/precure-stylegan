@@ -2,6 +2,8 @@
 
 Yet another StyleGAN implementation we tried out the generation of Precure (Japanese anime) images
 
+This project continues [here](https://github.com/curegit/precure-stylegan-ada), for better quality.
+
 ## Overview
 
 StyleGAN is a generative adversarial network introduced by NVIDIA researchers.
