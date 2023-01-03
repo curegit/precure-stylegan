@@ -8,11 +8,11 @@ from modules.argtypes import uint, natural, ufloat, positive, rate, filename, de
 from modules.utilities import mkdirp, filepath, altfilepath, load_array, save_image
 
 # Parse command line arguments
-parser = ArgumentParser(allow_abbrev=False, description="Style-Based GAN's Generator")
-parser.add_argument("latents", metavar="FILE", nargs="+", help="dataset directory which stores images")
+parser = ArgumentParser(allow_abbrev=False, description="Style-Based GAN's Style Mixer")
+parser.add_argument("latents", metavar="FILE", nargs="+", help="latent file for each level")
 parser.add_argument("-q", "--quit", action="store_true", help="exit just before generation (debug)")
 parser.add_argument("-f", "--force", action="store_true", help="allow overwrite existing files")
-parser.add_argument("-w", "--wipe", action="store_true", help="clean destination directory")
+parser.add_argument("-w", "--wipe", action="store_true", help="clean destination directory preliminarily")
 parser.add_argument("-j", "--dump-json", action="store_true", help="save command-line arguments as a JSON file")
 parser.add_argument("-r", "--result", "-d", "--directory", metavar="DEST", dest="directory", default="mixtures", help="destination directory for generated images")
 parser.add_argument("-p", "--prefix", type=filename, default="", help="filename prefix for generated images")

@@ -10,7 +10,7 @@ from modules.utilities import mkdirp, filepath, altfilepath, load_array, save_ar
 parser = ArgumentParser(allow_abbrev=False, description="Style-Based GAN's Generator")
 parser.add_argument("-q", "--quit", action="store_true", help="exit just before generation (debug)")
 parser.add_argument("-f", "--force", action="store_true", help="allow overwrite existing files")
-parser.add_argument("-w", "--wipe", action="store_true", help="clean destination directory")
+parser.add_argument("-w", "--wipe", action="store_true", help="clean destination directory preliminarily")
 parser.add_argument("-j", "--dump-json", action="store_true", help="save command-line arguments as a JSON file")
 parser.add_argument("-i", "--image-only", action="store_true", help="don't save latent vectors")
 parser.add_argument("-r", "--result", "-d", "--directory", metavar="DEST", dest="directory", default="images", help="destination directory for generated images")
