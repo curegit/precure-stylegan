@@ -15,7 +15,7 @@ def tile(x, y, imgs):
 		img = Image.open(img).convert("RGB")
 	return canvas
 
-if len(sys.argv) < 4:
+if len(sys.argv) < 5:
 	print("Create a N by M tiled image matrix")
 	print("usage: tile.py M N FILE [FILE ...] OUTPUT")
 else:
