@@ -55,11 +55,11 @@ We trained the models with facial images of Cure Beauty (Smile Pretty Cure!, 201
 
 ![MNIST](examples/mnist.png)
 
-### CIFAR-10 (Uncurated)
+### CIFAR-10 (Uncurated, ψ = 0.7)
 
 ![CIFAR-10](examples/cifar-10.png)
 
-### Anime Face (Uncurated)
+### Anime Face (Uncurated, ψ = 0.8)
 
 ![Anime Face](examples/anime.png)
 
