@@ -14,7 +14,7 @@ This implementation supports generation ranging from 4x4 px (stage 1) to 1024x10
 
 Most of the implementation follows the original paper, but we have added some enhancements.
 For example, we implemented an alternative least-squares objective introduced in LSGAN.
-We trained the models with the images of Precure character faces and other common datasets.
+We trained the models with facial images of Cure Beauty (Smile Pretty Cure!, 2012) and other common datasets.
 
 ## Requirements
 
