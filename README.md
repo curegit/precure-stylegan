@@ -33,14 +33,14 @@ We trained the models with facial images of Cure Beauty (Smile Pretty Cure!, 201
 
 ## Script Synopses
 
-- `train.py` trains the models of StyleGAN.
-  Use `-h` option for more details.
+- `train.py` trains StyleGAN models.
+  Use the `-h` option for more details.
 - `generate.py` generates images from a trained model.
-  Use `-h` option for more details.
+  Use the `-h` option for more details.
 - `mix.py` mixes styles from latent files.
-  Use `-h` option for more details.
-- `animate.py` makes the animation of the analogy from a trained model.
-  Use `-h` option for more details.
+  Use the `-h` option for more details.
+- `animate.py` makes an animation of the analogy from a trained model.
+  Use the `-h` option for more details.
 - `visualize.py` draws an example of a computation graph for debugging (Pydot and Graphviz are required).
   It takes no command-line arguments.
 - `check.py` analyzes the Chainer environment.
