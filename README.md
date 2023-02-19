@@ -28,6 +28,7 @@ We trained the models with facial images of Cure Beauty (Smile Pretty Cure!, 201
 ### Optional
 
 - Cupy
+- OpenCV-Python
 - Pydot (Graphviz)
 
 ## Script Synopses
@@ -35,6 +36,8 @@ We trained the models with facial images of Cure Beauty (Smile Pretty Cure!, 201
 - `train.py` trains the models of StyleGAN.
   Use `-h` option for more details.
 - `generate.py` generates images from a trained model.
+  Use `-h` option for more details.
+- `mix.py` mixes styles from latent files.
   Use `-h` option for more details.
 - `animate.py` makes the animation of the analogy from a trained model.
   Use `-h` option for more details.
