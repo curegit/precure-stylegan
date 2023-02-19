@@ -1,25 +1,20 @@
 # Precure StyleGAN
 
-Yet another StyleGAN implementation we tried out the generation of Precure (Japanese anime) images
+Yet another StyleGAN 1.0 implementation with Chainer
 
-This project continues [here](https://github.com/curegit/precure-stylegan-ada), for better quality.
+We tried out to generate facial images of a specific Precure (Japanese Anime) character.
+
+This project is finished and [will be continued here for better quality with StyleGAN 2.0 ADA](https://github.com/curegit/precure-stylegan-ada).
 
 ## Overview
 
 StyleGAN is a generative adversarial network introduced by NVIDIA researchers.
-Its output image resolutions grow progressively during training like PGGAN.
-This implementation supports 4x4 px (stage 1) to 1024x1024 px (stage 9) images.
-Most of the implementation follows the original paper, but we installed some enhancements.
-For instance, we implemented an alternate least-squares objective introduced in LSGAN.
-We trained the models with the images of Precure character faces.
-We also tested it with other common datasets.
+Like PGGAN, its output image resolutions grow progressively during training.
+This implementation supports generation ranging from 4x4 px (stage 1) to 1024x1024 px (stage 9) images.
 
-## Todo
-
-- Write documentation
-- Make a script to mix styles
-- Try other Precure
-- Implement StyleGAN 2.0
+Most of the implementation follows the original paper, but we have added some enhancements.
+For example, we implemented an alternative least-squares objective introduced in LSGAN.
+We trained the models with the images of Precure character faces and other common datasets.
 
 ## Requirements
 
