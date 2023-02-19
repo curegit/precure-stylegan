@@ -48,21 +48,19 @@ We trained the models with facial images of Cure Beauty (Smile Pretty Cure!, 201
 
 ## Results
 
-### Cure Beauty (Curated)
+### Cure Beauty (Curated, FID = 80.43)
 
 ![Cure Beauty](examples/beauty.png)
 
-## Other Dataset Results
-
-### MNIST (Uncurated)
+### MNIST (Uncurated, FID = 1.14)
 
 ![MNIST](examples/mnist.png)
 
-### CIFAR-10 (Uncurated, ψ = 0.7)
+### CIFAR-10 (Uncurated, ψ = 0.7, FID = 18.61)
 
 ![CIFAR-10](examples/cifar-10.png)
 
-### Anime Face (Uncurated, ψ = 0.8)
+### Anime Face (Uncurated, ψ = 0.8, FID = 13.11)
 
 ![Anime Face](examples/anime.png)
 
