@@ -5,7 +5,7 @@ from argparse import ArgumentParser
 from chainer import serializers, global_config
 from chainer.functions import stack
 from modules.networks import Generator
-from modules.argtypes import uint, natural, ufloat, positive, rate, filename, device
+from modules.argtypes import uint, natural, ufloat, rate, filename, device
 from modules.utilities import mkdirp, filepath, altfilepath, load_array, save_image
 
 # Parse command line arguments
