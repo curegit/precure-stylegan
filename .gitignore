@@ -9,6 +9,7 @@
 *.png
 *.gif
 *.webp
+!models/*.hdf5
 !examples/*.png
 
 # Byte-compiled / optimized / DLL files
