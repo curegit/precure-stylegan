@@ -60,13 +60,13 @@ Try yourself: `python generate.py -g models/mnist.hdf5 -x 4 -c 256 16 -z 256 -n 
 
 ### CIFAR-10 (Uncurated, ψ = 0.7, FID = 18.61)
 
-Try yourself: `python generate.py -g models/cifar10.hdf5 -x 4 -c 512 64 -n 100 -d cifar10-images`
+Try yourself: `python generate.py -g models/cifar10.hdf5 -x 4 -c 512 64 -t 0.7 -n 100 -d cifar10-images`
 
 ![CIFAR-10](examples/cifar-10.png)
 
 ### Anime Face (Uncurated, ψ = 0.8, FID = 13.11)
 
-Try yourself: `python generate.py -g models/anime.hdf5 -x 5 -c 512 64 -n 100 -d anime-images`
+Try yourself: `python generate.py -g models/anime.hdf5 -x 5 -c 512 64 -t 0.8 -n 100 -d anime-images`
 
 ![Anime Face](examples/anime.png)
 
