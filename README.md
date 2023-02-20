@@ -54,19 +54,19 @@ We trained the models with facial images of Cure Beauty (Smile Pretty Cure!, 201
 
 ### MNIST (Uncurated, FID = 1.14)
 
-`python generate.py -g models/mnist.hdf5 -x 4 -c 256 16 -z 256 -n 100`
+Try yourself: `python generate.py -g models/mnist.hdf5 -x 4 -c 256 16 -z 256 -n 100`
 
 ![MNIST](examples/mnist.png)
 
 ### CIFAR-10 (Uncurated, ψ = 0.7, FID = 18.61)
 
-`python generate.py -g models/cifar10.hdf5 -x 4 -c 512 64 -n 100`
+Try yourself: `python generate.py -g models/cifar10.hdf5 -x 4 -c 512 64 -n 100`
 
 ![CIFAR-10](examples/cifar-10.png)
 
 ### Anime Face (Uncurated, ψ = 0.8, FID = 13.11)
 
-`python generate.py -g models/anime.hdf5 -x 5 -c 512 64 -n 100`
+Try yourself: `python generate.py -g models/anime.hdf5 -x 5 -c 512 64 -n 100`
 
 ![Anime Face](examples/anime.png)
 
