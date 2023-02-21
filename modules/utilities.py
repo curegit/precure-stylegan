@@ -3,6 +3,7 @@ import os
 import os.path
 import inspect
 from PIL import Image
+from PIL.Image import Resampling
 from numpy import asarray, rint, clip, uint8, float32, save, load
 
 # Print to stderr
@@ -43,7 +44,7 @@ def save_array(array, path):
 # Load an image and return it as a Numpy array
 def load_image(path, size=None):
 	img = Image.open(path).convert("RGB")
-	if size is not None: img = img.resize(size, Image.LANCZOS)
+	if size is not None: img = img.resize(size, Resampling.LANCZOS)
 	return asarray(img, dtype=uint8).transpose(2, 0, 1).astype(float32) / 255
 
 # Convert a Numpy array to a Pillow image
