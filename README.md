@@ -20,8 +20,8 @@ We trained the models with facial images of Cure Beauty (Smile Pretty Cure!, 201
 
 - Python >= 3.6
 - Chainer >= 7.0
-- Pillow >= 7.1
-- Numpy
+- Pillow >= 9.1
+- Numpy < 1.24
 - H5py
 - Matplotlib
 
