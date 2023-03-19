@@ -4,9 +4,11 @@ Yet another StyleGAN 1.0 implementation with Chainer
 
 We tried out to generate facial images of a specific Precure (Japanese Anime) character.
 
-This project is finished and [will be continued here for better quality with StyleGAN 2.0 ADA](https://github.com/curegit/precure-stylegan-ada).
+This project is **finished** and [will be continued here for better quality with StyleGAN 2.0 ADA](https://github.com/curegit/precure-stylegan-ada).
 
 ## Overview
+
+![Overall Result](examples/overall.png)
 
 StyleGAN is a generative adversarial network introduced by NVIDIA researchers.
 Like PGGAN, its output image resolutions grow progressively during training.
